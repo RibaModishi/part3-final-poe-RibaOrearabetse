@@ -1,32 +1,27 @@
 package com.example.projectwatchapp
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.lifecycleScope
-import com.example.projectwatchapp.data.AppDatabase
-import com.example.projectwatchapp.data.entities.User
-import kotlinx.coroutines.launch
+import androidx.appcompat.app.AppCompatActivity
+import com.example.projectwatchapp.databinding.ActivityMainBinding
+import com.example.projectwatchapp.ui.auth.LoginActivity
+import com.example.projectwatchapp.ui.auth.RegisterActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(this@MainActivity)
-            val testUser = User(
-                username = "TestUser",
-                email = "test@example.com",
-                passwordHash = "hashed_password"
-            )
-            val userId = db.userDao().insertUser(testUser)
-            Log.d("PocketWatch", "Inserted user with ID: $userId")
+        binding.buttonGoToLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
 
-            val retrieved = db.userDao().getUserById(userId)
-            retrieved.collect { user ->
-                Log.d("PocketWatch", "Retrieved user: ${user?.username}")
-            }
+        binding.buttonGoToRegister.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
 }
