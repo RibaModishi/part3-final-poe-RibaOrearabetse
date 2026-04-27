@@ -4,147 +4,242 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.projectwatchapp.data.dao.ExpenseDao
 import com.example.projectwatchapp.data.entities.Expense
+import java.io.File
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/*
- * Riba change summary:
- * - Expanded addExpense(...) to support assignment-required fields:
- *   startTime, endTime, and photoUri.
- * - Kept filtering logic in ViewModel so UI stays simple.
+/**
+ * ExpenseViewModel = business logic for expense actions.
+ *
+ * Rubric mapping:
+ * - Create expense entries
+ * - View entries in a selected period
+ * - View total spent (overall / by category in a period)
  */
 class ExpenseViewModel(
     private val expenseDao: ExpenseDao
 ) : ViewModel() {
 
-    private val _activeUserId = MutableStateFlow<Long?>(null)
-    val activeUserId: StateFlow<Long?> = _activeUserId.asStateFlow()
+    companion object {
+        /** Shown after insert; UI may clear a draft receipt path. */
+        const val SUCCESS_MESSAGE_EXPENSE_ADDED = "Expense added."
+    }
 
-    private val _filterRange = MutableStateFlow<Pair<Long, Long>?>(null)
-    val filterRange: StateFlow<Pair<Long, Long>?> = _filterRange.asStateFlow()
+    // Internal mutable state holder.
+    private val _uiState = MutableStateFlow(ExpenseUiState())
+    // Read-only state for UI.
+    val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+    // Keep track of the currently running list-collector job so we can swap queries.
+    private var expensesObserverJob: Job? = null
 
-    // Reacts to both active user and date range changes.
-    val expenses = combine(_activeUserId, _filterRange) { userId, range -> userId to range }
-        .flatMapLatest { (userId, range) ->
-            if (userId == null) {
-                flowOf(emptyList())
-            } else if (range == null) {
-                // No filter selected -> show all expenses for the user.
-                expenseDao.getExpensesForUser(userId)
-            } else {
-                // Filter selected -> show only expenses in that period.
-                expenseDao.getExpensesBetween(
-                    userId = userId,
-                    startDate = range.first,
-                    endDate = range.second
-                )
-            }
+    /**
+     * Set active user and load all expenses in reverse date order.
+     */
+    fun loadAllExpenses(userId: Long) {
+        _uiState.value = _uiState.value.copy(
+            activeUserId = userId,
+            activeFilter = ExpenseFilter.All,
+            errorMessage = null
+        )
+        observeExpenses(ExpenseFilter.All)
+    }
+
+    /**
+     * Filter expenses by a date range (inclusive).
+     * Dates are expected as epoch milliseconds.
+     */
+    fun loadExpensesForPeriod(startDate: Long, endDate: Long) {
+        val userId = _uiState.value.activeUserId
+        if (userId == null) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Load expenses first to set active user.")
+            return
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        if (startDate > endDate) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Start date must be before end date.")
+            return
+        }
 
-    fun setActiveUser(userId: Long?) {
-        _activeUserId.value = userId
+        val filter = ExpenseFilter.Period(startDate, endDate)
+        _uiState.value = _uiState.value.copy(activeFilter = filter, errorMessage = null)
+        observeExpenses(filter)
     }
 
-    fun setDateRangeFilter(startDate: Long, endDate: Long) {
-        _filterRange.value = startDate to endDate
-    }
-
-    fun clearDateRangeFilter() {
-        _filterRange.value = null
-    }
-
+    /**
+     * Add a new expense.
+     * Required fields for this project: amount, date, description.
+     * Category is optional in your entity (nullable).
+     */
     fun addExpense(
-        userId: Long,
-        categoryId: Long?,
         amount: Double,
-        description: String,
         date: Long,
-        // Riba added: optional times for assignment requirement.
-        startTime: Long? = null,
-        endTime: Long? = null,
-        // Riba added: optional photo path/URI.
-        photoUri: String? = null,
+        description: String,
+        categoryId: Long? = null,
         notes: String? = null,
-        xpEarned: Int = 5
+        photoPath: String? = null
     ) {
+        val userId = _uiState.value.activeUserId
+        if (userId == null) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Load expenses first to set active user.")
+            return
+        }
+
+        val cleanDescription = description.trim()
+        if (amount <= 0.0) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Amount must be greater than 0.")
+            return
+        }
+        if (cleanDescription.isBlank()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Description cannot be empty.")
+            return
+        }
+
         viewModelScope.launch {
-            try {
-                expenseDao.insertExpense(
-                    Expense(
-                        userId = userId,
-                        categoryId = categoryId,
-                        amount = amount,
-                        // Trim to avoid leading/trailing spaces from user input.
-                        description = description.trim(),
-                        date = date,
-                        startTime = startTime,
-                        endTime = endTime,
-                        photoUri = photoUri,
-                        notes = notes,
-                        xpEarned = xpEarned
-                    )
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            expenseDao.insertExpense(
+                Expense(
+                    userId = userId,
+                    categoryId = categoryId,
+                    amount = amount,
+                    description = cleanDescription,
+                    date = date,
+                    notes = notes?.trim()?.takeIf { it.isNotEmpty() },
+                    photoPath = photoPath?.trim()?.takeIf { it.isNotEmpty() }
                 )
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Failed to save expense."
-            }
+            )
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                successMessage = SUCCESS_MESSAGE_EXPENSE_ADDED
+            )
         }
     }
 
-    fun updateExpense(expense: Expense) {
+    /**
+     * Delete an expense by id from the currently loaded list.
+     */
+    fun deleteExpense(expenseId: Long) {
+        val expense = _uiState.value.expenses.firstOrNull { it.expenseId == expenseId }
+        if (expense == null) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Expense not found.")
+            return
+        }
+
         viewModelScope.launch {
-            try {
-                expenseDao.updateExpense(expense)
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Failed to update expense."
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            expense.photoPath?.let { path ->
+                runCatching { File(path).delete() }
             }
+            expenseDao.deleteExpense(expense)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                successMessage = "Expense deleted."
+            )
         }
     }
 
-    fun deleteExpense(expense: Expense) {
-        viewModelScope.launch {
-            try {
-                expenseDao.deleteExpense(expense)
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Failed to delete expense."
-            }
+    /**
+     * Calculate total spent for currently active period.
+     * If no period filter is active, uses a very broad date range.
+     */
+    fun loadTotalSpentForActivePeriod() {
+        val userId = _uiState.value.activeUserId
+        if (userId == null) {
+            _uiState.value = _uiState.value.copy(errorMessage = "No active user.")
+            return
         }
-    }
 
-    fun getTotalSpentInRange(
-        userId: Long,
-        startDate: Long,
-        endDate: Long,
-        onResult: (Double) -> Unit
-    ) {
+        val (startDate, endDate) = when (val filter = _uiState.value.activeFilter) {
+            is ExpenseFilter.Period -> filter.startDate to filter.endDate
+            ExpenseFilter.All -> 0L to Long.MAX_VALUE
+        }
+
         viewModelScope.launch {
-            // If DAO returns null (no data), default to 0.0 for safe UI display.
             val total = expenseDao.getTotalSpent(userId, startDate, endDate) ?: 0.0
-            onResult(total)
+            _uiState.value = _uiState.value.copy(totalSpentInActivePeriod = total)
         }
     }
 
-    fun getCategoryTotalInRange(
-        userId: Long,
-        categoryId: Long,
-        startDate: Long,
-        endDate: Long,
-        onResult: (Double) -> Unit
-    ) {
+    /**
+     * Calculate total spent for one category in currently active period.
+     */
+    fun loadCategoryTotalForActivePeriod(categoryId: Long) {
+        val userId = _uiState.value.activeUserId
+        if (userId == null) {
+            _uiState.value = _uiState.value.copy(errorMessage = "No active user.")
+            return
+        }
+
+        val (startDate, endDate) = when (val filter = _uiState.value.activeFilter) {
+            is ExpenseFilter.Period -> filter.startDate to filter.endDate
+            ExpenseFilter.All -> 0L to Long.MAX_VALUE
+        }
+
         viewModelScope.launch {
-            // Category total in selected period; null becomes 0.0.
             val total = expenseDao.getTotalSpentForCategory(userId, categoryId, startDate, endDate) ?: 0.0
-            onResult(total)
+            val updatedMap = _uiState.value.categoryTotalsInActivePeriod.toMutableMap()
+            updatedMap[categoryId] = total
+            _uiState.value = _uiState.value.copy(categoryTotalsInActivePeriod = updatedMap)
+        }
+    }
+
+    /**
+     * Clear temporary messages after showing toast/snackbar.
+     */
+    fun clearMessages() {
+        _uiState.value = _uiState.value.copy(errorMessage = null, successMessage = null)
+    }
+
+    private fun observeExpenses(filter: ExpenseFilter) {
+        val userId = _uiState.value.activeUserId ?: return
+
+        // Stop previous observer to avoid multiple simultaneous collectors.
+        expensesObserverJob?.cancel()
+        expensesObserverJob = viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            when (filter) {
+                ExpenseFilter.All -> {
+                    expenseDao.getExpensesForUser(userId).collect { list ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            expenses = list
+                        )
+                    }
+                }
+
+                is ExpenseFilter.Period -> {
+                    expenseDao.getExpensesBetween(userId, filter.startDate, filter.endDate).collect { list ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            expenses = list
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
+/**
+ * Filter model used by this ViewModel for expense list queries.
+ */
+sealed class ExpenseFilter {
+    data object All : ExpenseFilter()
+    data class Period(val startDate: Long, val endDate: Long) : ExpenseFilter()
+}
+
+/**
+ * UI state for expense screens.
+ */
+data class ExpenseUiState(
+    val isLoading: Boolean = false,
+    val activeUserId: Long? = null,
+    val activeFilter: ExpenseFilter = ExpenseFilter.All,
+    val expenses: List<Expense> = emptyList(),
+    val totalSpentInActivePeriod: Double = 0.0,
+    val categoryTotalsInActivePeriod: Map<Long, Double> = emptyMap(),
+    val errorMessage: String? = null,
+    val successMessage: String? = null
+)

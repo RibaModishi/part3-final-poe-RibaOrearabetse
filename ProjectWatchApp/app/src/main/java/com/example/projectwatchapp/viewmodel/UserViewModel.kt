@@ -5,112 +5,162 @@ import androidx.lifecycle.viewModelScope
 import com.example.projectwatchapp.data.dao.UserDao
 import com.example.projectwatchapp.data.entities.User
 import com.example.projectwatchapp.utils.SessionManager
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel = "brain" of the screen.
+ * It keeps UI data and handles logic (login/register/etc) so Activities stay simple.
+ *
+ * Why this matters:
+ * - Activity/Fragment = UI
+ * - ViewModel = logic + state
+ * - DAO = database operations
+ */
 class UserViewModel(
     private val userDao: UserDao
 ) : ViewModel() {
 
-    private val _activeUserId = MutableStateFlow<Long?>(null)
-    val activeUserId: StateFlow<Long?> = _activeUserId.asStateFlow()
+    // Mutable inside ViewModel only.
+    private val _uiState = MutableStateFlow(UserUiState())
+    // Read-only version exposed to UI layer.
+    val uiState: StateFlow<UserUiState> = _uiState.asStateFlow()
 
-    val activeUser = _activeUserId
-        .flatMapLatest { userId ->
-            if (userId == null) flowOf(null) else userDao.getUserById(userId)
+    fun registerUser(
+        username: String,
+        email: String,
+        password: String
+    ) {
+        // Basic input cleanup before validation/querying.
+        val cleanUsername = username.trim()
+        val cleanEmail = email.trim().lowercase()
+
+        if (cleanUsername.isBlank() || cleanEmail.isBlank() || password.isBlank()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "All fields are required.")
+            return
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
-
-    private val _authSuccess = MutableStateFlow(false)
-    val authSuccess: StateFlow<Boolean> = _authSuccess.asStateFlow()
-
-    fun clearAuthFlags() {
-        _authSuccess.value = false
-        _errorMessage.value = null
-    }
-
-    fun setActiveUser(userId: Long?) {
-        _activeUserId.value = userId
-    }
-
-    fun registerUser(username: String, email: String, password: String) {
+        // viewModelScope.launch starts a coroutine tied to this ViewModel lifecycle.
+        // It automatically cancels when ViewModel is cleared.
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            _authSuccess.value = false
-            try {
-                val existing = userDao.getUserByEmail(email.trim())
-                if (existing != null) {
-                    _errorMessage.value = "An account with this email already exists."
-                    return@launch
-                }
-                val newUserId = userDao.insertUser(
-                    User(
-                        username = username.trim(),
-                        email = email.trim(),
-                        passwordHash = password.trim()
-                    )
+            // UI can show a loading spinner from this flag.
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+
+            // Prevent duplicate accounts by email.
+            val existingUser = userDao.getUserByEmail(cleanEmail)
+            if (existingUser != null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = "An account with this email already exists."
                 )
-                _activeUserId.value = newUserId
-                _authSuccess.value = true
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Failed to register user."
-            } finally {
-                _isLoading.value = false
+                return@launch
+            }
+
+            val createdUser = User(
+                username = cleanUsername,
+                email = cleanEmail,
+                // Never store plain text passwords in DB.
+                passwordHash = hashPassword(password)
+            )
+            val newUserId = userDao.insertUser(createdUser)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                currentUserId = newUserId,
+                isLoggedIn = true,
+                errorMessage = null
+            )
+        }
+    }
+
+    fun loginUser(username: String, password: String) {
+        if (username.isBlank() || password.isBlank()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Username and password are required.")
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            // Hash entered password and compare to stored hash.
+            val user = userDao.login(username.trim(), hashPassword(password))
+            if (user == null) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isLoggedIn = false,
+                    errorMessage = INVALID_LOGIN_MESSAGE
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    currentUserId = user.userId,
+                    isLoggedIn = true,
+                    errorMessage = null
+                )
             }
         }
     }
 
-    fun login(username: String, password: String) {
+    fun loadUser(userId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            _authSuccess.value = false
-            try {
-                val user = userDao.login(username.trim(), password.trim())
-                if (user == null) {
-                    _errorMessage.value = "Invalid username or password."
-                    return@launch
-                }
-                _activeUserId.value = user.userId
-                _authSuccess.value = true
-            } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Login failed."
-            } finally {
-                _isLoading.value = false
+            // Flow emits updates whenever this user row changes in Room.
+            userDao.getUserById(userId).collect { user ->
+                _uiState.value = _uiState.value.copy(currentUser = user)
             }
+        }
+    }
+
+    fun awardXp(action: String, amount: Double? = null) {
+        // If no user is loaded, nothing to update.
+        val user = _uiState.value.currentUser ?: return
+        viewModelScope.launch {
+            val deltaXp = SessionManager.calculateXpForAction(action, amount)
+            if (deltaXp <= 0) return@launch
+
+            val updatedXp = user.xp + deltaXp
+            val updatedLevel = SessionManager.getLevelFromXp(updatedXp)
+            userDao.updateXpAndLevel(
+                userId = user.userId,
+                newXp = updatedXp,
+                newLevel = updatedLevel
+            )
         }
     }
 
     fun logout() {
-        _activeUserId.value = null
-        _authSuccess.value = false
+        // Reset all user/session UI state.
+        _uiState.value = UserUiState()
     }
 
-    fun addXp(userId: Long, xpToAdd: Int) {
-        viewModelScope.launch {
-            try {
-                val user = userDao.getUserById(userId).first() ?: return@launch
+    /** Clears transient messages so the next login attempt always produces a new [UserUiState] emission. */
+    fun clearMessages() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
 
-                val newXp = (user.xp + xpToAdd).coerceAtLeast(0)
-                val newLevel = SessionManager.getLevelFromXp(newXp)
-                userDao.updateXpAndLevel(userId, newXp, newLevel)
-            } catch (_: Exception) {
-                // Keep UI stable if XP update fails.
-            }
-        }
+    private fun hashPassword(password: String): String {
+        // NOTE: Good for a student project, but production apps should use
+        // stronger password hashing (bcrypt/Argon2 + salt) on a backend.
+        val bytes = MessageDigest.getInstance("SHA-256")
+            .digest(password.toByteArray(StandardCharsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    companion object {
+        private const val INVALID_LOGIN_MESSAGE =
+            "Invalid username or password. If you updated the app, local data was reset—use Create Account."
     }
 }
+
+/**
+ * Single state object for UI.
+ * UI observes this and renders: loading, errors, logged-in state, etc.
+ */
+data class UserUiState(
+    val isLoading: Boolean = false,
+    val isLoggedIn: Boolean = false,
+    val currentUserId: Long? = null,
+    val currentUser: User? = null,
+    val errorMessage: String? = null
+)

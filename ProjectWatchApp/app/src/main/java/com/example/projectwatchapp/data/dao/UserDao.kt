@@ -21,7 +21,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     suspend fun getUserByEmail(email: String): User?
 
-    @Query("SELECT * FROM users WHERE username = :username AND passwordHash = :passwordHash LIMIT 1")
+    @Query(
+        "SELECT * FROM users WHERE LOWER(username) = LOWER(:username) AND passwordHash = :passwordHash LIMIT 1"
+    )
     suspend fun login(username: String, passwordHash: String): User?
 
     @Query("UPDATE users SET xp = :newXp, level = :newLevel WHERE userId = :userId")

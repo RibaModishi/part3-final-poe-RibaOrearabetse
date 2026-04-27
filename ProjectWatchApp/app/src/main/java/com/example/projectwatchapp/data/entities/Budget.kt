@@ -29,8 +29,6 @@ data class Budget(
     val userId: Long,
     val categoryId: Long,
     val amount: Double,
-    val minimumGoalAmount: Double? = null,
-    val maximumGoalAmount: Double? = null,
     val period: String,            // "monthly", "weekly", "yearly"
     val startDate: Long,
     val endDate: Long? = null,
