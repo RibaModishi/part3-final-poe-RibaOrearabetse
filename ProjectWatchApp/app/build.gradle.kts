@@ -33,6 +33,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    sourceSets {
+        getByName("main") {
+            // UI sync note:
+            // Khensani's "ui-reference" folder is kept as a design guide only.
+            // Compile from the production res folder so reference assets do not
+            // clash with the working resources tied to current business logic.
+            res.srcDirs("src/main/res")
+        }
+    }
 }
 
 dependencies {

@@ -27,6 +27,11 @@ import kotlinx.coroutines.launch
  * 1) Read user inputs
  * 2) Call ViewModel function
  * 3) Observe state updates and react in UI
+ *
+ * UI sync note:
+ * - Khensani's sign-in visual design was integrated by Riba into this project.
+ * - Integration was limited to XML styling/structure while preserving existing IDs.
+ * - That keeps this Activity + ViewModel + Room flow unchanged (UI-only adaptation).
  */
 class LoginActivity : ComponentActivity() {
 

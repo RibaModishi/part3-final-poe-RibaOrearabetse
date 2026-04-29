@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_auth">
+
+    <!-- ══ COIN: big gold top-left ══ -->
+    <FrameLayout
+        android:id="@+id/coin1"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/coin_gold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/currency_symbol"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#B8860B"
+            android:gravity="center"/>
+    </FrameLayout>
+
+    <!-- ══ COIN: small silver mid-left ══ -->
+    <FrameLayout
+        android:id="@+id/coin2"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/coin_silver"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="85dp"
+        android:layout_marginStart="95dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/currency_symbol"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#888888"
+            android:gravity="center"/>
+    </FrameLayout>
+
+    <!-- ══ COIN: small silver lower-left ══ -->
+    <FrameLayout
+        android:id="@+id/coin3"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:background="@drawable/coin_silver"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="145dp"
+        android:layout_marginStart="6dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/currency_symbol"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#888888"
+            android:gravity="center"/>
+    </FrameLayout>
+
+    <!-- ══ COIN: big gold top-right ══ -->
+    <FrameLayout
+        android:id="@+id/coin4"
+        android:layout_width="74dp"
+        android:layout_height="74dp"
+        android:background="@drawable/coin_gold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="24dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/currency_symbol"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#B8860B"
+            android:gravity="center"/>
+    </FrameLayout>
+
+    <!-- ══ COIN: bronze mid-right ══ -->
+    <FrameLayout
+        android:id="@+id/coin5"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:background="@drawable/coin_bronze"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="76dp"
+        android:layout_marginEnd="100dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/currency_symbol"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#7A4A1E"
+            android:gravity="center"/>
+    </FrameLayout>
+
+    <!-- ══ COIN: medium gold far right ══ -->
+    <FrameLayout
+        android:id="@+id/coin6"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:background="@drawable/coin_gold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="110dp"
+        android:layout_marginEnd="4dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/currency_symbol"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#B8860B"
+            android:gravity="center"/>
+    </FrameLayout>
+
+    <!-- ══ APP LOGO + NAME (white text) ══ -->
+    <LinearLayout
+        android:id="@+id/layout_brand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="195dp"
+        android:layout_marginStart="20dp">
+
+        <ImageView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:src="@drawable/logo_pocket_watch"
+            android:scaleType="fitCenter"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="@string/app_name_display" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name_display"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/brand_slogan"
+                android:textSize="11sp"
+                android:textColor="#AAFFFFFF"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ══ CREAM FORM CARD ══ -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_form_card"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        android:layout_marginTop="265dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="40dp">
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_back"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_in_subtitle"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- USERNAME -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_username"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp"/>
+
+            <EditText
+                android:id="@+id/et_username"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="@string/hint_username"
+                android:inputType="textPersonName"
+                android:autofillHints="username"
+                android:background="@drawable/bg_input"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="14sp"
+                android:textColor="#1A1A1A"
+                android:textColorHint="#AAAAAA"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- PASSWORD row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/label_password"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="#444444"
+                    android:letterSpacing="0.1"/>
+
+                <TextView
+                    android:id="@+id/tv_forgot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_forgot_password"
+                    android:textSize="11sp"
+                    android:textColor="#1A6B3C"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/et_password"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="@string/hint_password"
+                android:inputType="textPassword"
+                android:autofillHints="password"
+                android:background="@drawable/bg_input"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textSize="14sp"
+                android:textColor="#1A1A1A"
+                android:textColorHint="#AAAAAA"
+                android:layout_marginBottom="20dp"/>
+
+            <!-- SIGN IN button -->
+            <Button
+                android:id="@+id/btn_sign_in"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:text="@string/btn_sign_in_arrow"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_btn_green"
+                android:stateListAnimator="@null"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- OR divider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#CCCCCC"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_or_continue"
+                    android:textSize="11sp"
+                    android:textColor="#999999"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#CCCCCC"/>
+            </LinearLayout>
+
+            <!-- GOOGLE button -->
+            <Button
+                android:id="@+id/btn_google"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="@string/btn_google_continue"
+                android:textColor="#1A1A1A"
+                android:textSize="14sp"
+                android:background="@drawable/bg_btn_outline"
+                android:stateListAnimator="@null"
+                android:layout_marginBottom="20dp"/>
+
+            <!-- Switch -->
+            <TextView
+                android:id="@+id/tv_go_signup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_sign_up"
+                android:textSize="12sp"
+                android:textColor="#1A6B3C"
+                android:textStyle="bold"
+                android:gravity="center"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

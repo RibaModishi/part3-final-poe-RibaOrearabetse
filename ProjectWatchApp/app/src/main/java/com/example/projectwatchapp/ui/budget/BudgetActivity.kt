@@ -1,14 +1,18 @@
 package com.example.projectwatchapp.ui.budget
 
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.SeekBar
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.PopupMenu
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
@@ -20,6 +24,13 @@ import com.example.projectwatchapp.R
 import com.example.projectwatchapp.data.AppDatabase
 import com.example.projectwatchapp.data.entities.Category
 import com.example.projectwatchapp.ui.auth.LoginActivity
+import com.example.projectwatchapp.ui.category.CategoryActivity
+import com.example.projectwatchapp.ui.dashboard.DashboardActivity
+import com.example.projectwatchapp.ui.expense.ExpenseActivity
+import com.example.projectwatchapp.ui.goals.GoalsActivity
+import com.example.projectwatchapp.ui.reports.ReportsActivity
+import com.example.projectwatchapp.ui.rewards.RewardsActivity
+import com.example.projectwatchapp.ui.common.PopupMenuUtils
 import com.example.projectwatchapp.viewmodel.BudgetViewModel
 import com.example.projectwatchapp.viewmodel.MonthlyStatus
 import java.text.NumberFormat
@@ -29,10 +40,20 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 
 /**
- * Budget screen: min/max monthly goals via [SeekBar], formatted money via [NumberFormat],
- * per-category budget cap via spinner + seekbar, list and delete active budgets.
+ * Budget screen with textbox budget inputs, formatted money via [NumberFormat],
+ * per-category budget cap via spinner + amount textbox, list and delete active budgets.
  */
 class BudgetActivity : ComponentActivity() {
+    companion object {
+        private const val MENU_DASHBOARD = 1
+        private const val MENU_EXPENSES = 2
+        private const val MENU_CATEGORY = 3
+        private const val MENU_BUDGET = 4
+        private const val MENU_GOALS = 5
+        private const val MENU_REWARDS = 6
+        private const val MENU_REPORTS = 7
+        private const val MENU_LOGOUT = 8
+    }
 
     private val database by lazy { AppDatabase.getDatabase(this) }
     private val budgetViewModel: BudgetViewModel by viewModels {
@@ -40,10 +61,6 @@ class BudgetActivity : ComponentActivity() {
     }
 
     private val zoneId: ZoneId = ZoneId.systemDefault()
-
-    /** Each SeekBar progress unit = this many currency units (assignment: SeekBar + NumberFormat). */
-    private val monthlyGoalStep = 50.0
-    private val categoryBudgetStep = 20.0
 
     private val moneyFormat: NumberFormat = NumberFormat.getNumberInstance(Locale.getDefault()).apply {
         minimumFractionDigits = 2
@@ -64,66 +81,77 @@ class BudgetActivity : ComponentActivity() {
             return
         }
 
-        val seekBarMin = findViewById<SeekBar>(R.id.seekBarMinMonthlyGoal)
-        val seekBarMax = findViewById<SeekBar>(R.id.seekBarMaxMonthlyGoal)
-        val textViewMinValue = findViewById<TextView>(R.id.textViewMinGoalValue)
-        val textViewMaxValue = findViewById<TextView>(R.id.textViewMaxGoalValue)
+        val minGoalInput = findViewById<EditText>(R.id.editTextMinMonthlyGoal)
+        val maxGoalInput = findViewById<EditText>(R.id.editTextMaxMonthlyGoal)
         val buttonApplyGoals = findViewById<Button>(R.id.buttonApplyMonthlyGoals)
         val textViewSummary = findViewById<TextView>(R.id.textViewBudgetSummary)
+        val totalBudgetValue = findViewById<TextView>(R.id.textViewTotalBudgetValue)
+        val allocatedValue = findViewById<TextView>(R.id.textViewAllocatedBudgetValue)
+        val unallocatedValue = findViewById<TextView>(R.id.textViewUnallocatedBudgetValue)
         val spinnerCategory = findViewById<Spinner>(R.id.spinnerBudgetCategory)
-        val seekBarCategoryAmount = findViewById<SeekBar>(R.id.seekBarCategoryBudgetAmount)
-        val textViewCategoryAmountValue = findViewById<TextView>(R.id.textViewCategoryBudgetValue)
+        val categoryAmountInput = findViewById<EditText>(R.id.editTextCategoryBudgetAmount)
         val buttonSaveCategoryBudget = findViewById<Button>(R.id.buttonSaveCategoryBudget)
+        val categoryRowsContainer = findViewById<LinearLayout>(R.id.layoutBudgetCategoryRows)
         val textViewBudgetList = findViewById<TextView>(R.id.textViewActiveBudgetsList)
         val editDeleteBudgetId = findViewById<EditText>(R.id.editTextDeleteBudgetId)
         val buttonDeleteBudget = findViewById<Button>(R.id.buttonDeleteBudget)
         val loadingText = findViewById<TextView>(R.id.textViewBudgetLoading)
+        val menuButton = findViewById<ImageView>(R.id.buttonBudgetMenu)
+        val logoutButton = findViewById<ImageView>(R.id.buttonBudgetLogout)
+        val navDashboard = findViewById<TextView>(R.id.navBudgetDashboard)
+        val navExpenses = findViewById<TextView>(R.id.navBudgetExpenses)
+        val navCategory = findViewById<TextView>(R.id.navBudgetCategory)
+        val navBudget = findViewById<TextView>(R.id.navBudgetBudget)
 
-        fun minFromSeek(): Double = seekBarMin.progress * monthlyGoalStep
-        fun maxFromSeek(): Double = seekBarMax.progress * monthlyGoalStep
+        minGoalInput.setText("5000")
+        maxGoalInput.setText("5000")
+        categoryAmountInput.setText("1000")
 
-        fun refreshMinMaxLabels() {
-            textViewMinValue.text = getString(R.string.budget_seek_value, moneyFormat.format(minFromSeek()))
-            textViewMaxValue.text = getString(R.string.budget_seek_value, moneyFormat.format(maxFromSeek()))
+        logoutButton.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
-
-        fun categoryAmountFromSeek(): Double = seekBarCategoryAmount.progress * categoryBudgetStep
-
-        fun refreshCategoryBudgetLabel() {
-            textViewCategoryAmountValue.text = getString(
-                R.string.budget_seek_value,
-                moneyFormat.format(categoryAmountFromSeek())
-            )
+        menuButton.setOnClickListener { anchor ->
+            val popup = PopupMenu(this, anchor)
+            popup.menu.add(0, MENU_DASHBOARD, 0, getString(R.string.dashboard_nav_goals))
+            popup.menu.add(0, MENU_EXPENSES, 1, getString(R.string.dashboard_nav_expenses))
+            popup.menu.add(0, MENU_CATEGORY, 2, getString(R.string.dashboard_nav_category))
+            popup.menu.add(0, MENU_BUDGET, 3, getString(R.string.dashboard_nav_budget))
+            popup.menu.add(0, MENU_GOALS, 4, getString(R.string.action_open_goals))
+            popup.menu.add(0, MENU_REWARDS, 5, getString(R.string.action_open_rewards))
+            popup.menu.add(0, MENU_REPORTS, 6, getString(R.string.reports_title))
+            popup.menu.add(0, MENU_LOGOUT, 7, getString(R.string.dashboard_back_to_login))
+            popup.menu.findItem(MENU_DASHBOARD)?.setIcon(R.drawable.ic_nav_dashboard)
+            popup.menu.findItem(MENU_EXPENSES)?.setIcon(R.drawable.ic_nav_expenses)
+            popup.menu.findItem(MENU_CATEGORY)?.setIcon(R.drawable.ic_nav_category)
+            popup.menu.findItem(MENU_BUDGET)?.setIcon(R.drawable.ic_nav_budget)
+            popup.menu.findItem(MENU_GOALS)?.setIcon(android.R.drawable.ic_menu_myplaces)
+            popup.menu.findItem(MENU_REWARDS)?.setIcon(android.R.drawable.star_big_on)
+            popup.menu.findItem(MENU_REPORTS)?.setIcon(android.R.drawable.ic_menu_sort_by_size)
+            popup.menu.findItem(MENU_LOGOUT)?.setIcon(R.drawable.ic_dash_logout)
+            PopupMenuUtils.forceShowIcons(popup)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    MENU_DASHBOARD -> navigateDashboard(userId)
+                    MENU_EXPENSES -> navigateExpenses(userId)
+                    MENU_CATEGORY -> navigateCategory(userId)
+                    MENU_BUDGET -> Unit
+                    MENU_GOALS -> navigateGoals(userId)
+                    MENU_REWARDS -> navigateRewards(userId)
+                    MENU_REPORTS -> navigateReports(userId)
+                    MENU_LOGOUT -> {
+                        startActivity(Intent(this, LoginActivity::class.java))
+                        finish()
+                    }
+                }
+                true
+            }
+            popup.show()
         }
-
-        // Sensible starting positions (can drag before Apply).
-        seekBarMin.progress = 100  // 5 000
-        seekBarMax.progress = 400 // 20 000
-        seekBarCategoryAmount.progress = 50 // 1 000
-        refreshMinMaxLabels()
-        refreshCategoryBudgetLabel()
-
-        seekBarMin.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                refreshMinMaxLabels()
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-        seekBarMax.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                refreshMinMaxLabels()
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-        seekBarCategoryAmount.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                refreshCategoryBudgetLabel()
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        navDashboard.setOnClickListener { navigateDashboard(userId) }
+        navExpenses.setOnClickListener { navigateExpenses(userId) }
+        navCategory.setOnClickListener { navigateCategory(userId) }
+        navBudget.setOnClickListener { }
 
         budgetViewModel.loadBudgets(userId)
 
@@ -150,8 +178,14 @@ class BudgetActivity : ComponentActivity() {
         }
 
         buttonApplyGoals.setOnClickListener {
-            val minGoal = minFromSeek()
-            val maxGoal = maxFromSeek()
+            val minGoal = minGoalInput.text.toString().toDoubleOrNull()
+            if (minGoal == null) {
+                Toast.makeText(this, getString(R.string.budget_invalid_amount), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // Single monthly budget in UI; keep min and max aligned for existing status logic.
+            val maxGoal = minGoal
+            maxGoalInput.setText(maxGoal.toString())
             budgetViewModel.setMonthlyGoals(minGoal = minGoal, maxGoal = maxGoal)
         }
 
@@ -164,7 +198,11 @@ class BudgetActivity : ComponentActivity() {
                 Toast.makeText(this, getString(R.string.budget_pick_category_first), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val amount = categoryAmountFromSeek()
+            val amount = categoryAmountInput.text.toString().toDoubleOrNull()
+            if (amount == null) {
+                Toast.makeText(this, getString(R.string.budget_invalid_amount), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
             budgetViewModel.upsertCategoryBudget(
                 categoryId = categoryId,
@@ -190,18 +228,16 @@ class BudgetActivity : ComponentActivity() {
                     loadingText.visibility = if (state.isLoading) View.VISIBLE else View.GONE
 
                     val minStr = state.minMonthlyGoal?.let { moneyFormat.format(it) } ?: "—"
-                    val maxStr = state.maxMonthlyGoal?.let { moneyFormat.format(it) } ?: "—"
+                    val maxStr = state.maxMonthlyGoal?.let { moneyFormat.format(it) } ?: minStr
                     val allocStr = moneyFormat.format(state.allocatedTotal)
                     val unallocStr = state.unallocatedAmount?.let { moneyFormat.format(it) } ?: "—"
 
+                    totalBudgetValue.text = "R$maxStr"
+                    allocatedValue.text = "R$allocStr"
+                    unallocatedValue.text = "R$unallocStr"
+
                     textViewSummary.text = buildString {
-                        append(getString(R.string.budget_summary_line_min, minStr))
-                        append("\n")
                         append(getString(R.string.budget_summary_line_max, maxStr))
-                        append("\n")
-                        append(getString(R.string.budget_summary_line_allocated, allocStr))
-                        append("\n")
-                        append(getString(R.string.budget_summary_line_unallocated, unallocStr))
                         append("\n")
                         append(
                             getString(
@@ -232,6 +268,21 @@ class BudgetActivity : ComponentActivity() {
                                 )
                         }
                     }
+                    renderCategoryRows(
+                        container = categoryRowsContainer,
+                        categories = cachedCategories.sortedBy { it.name },
+                        budgetsByCategory = state.budgets.associateBy { it.categoryId },
+                        onSaveCategoryAmount = { categoryId, amount ->
+                            val monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
+                            budgetViewModel.upsertCategoryBudget(
+                                categoryId = categoryId,
+                                amount = amount,
+                                period = "monthly",
+                                startDate = monthStart,
+                                endDate = null
+                            )
+                        }
+                    )
 
                     state.errorMessage?.let {
                         Toast.makeText(this@BudgetActivity, it, Toast.LENGTH_LONG).show()
@@ -249,6 +300,94 @@ class BudgetActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun renderCategoryRows(
+        container: LinearLayout,
+        categories: List<Category>,
+        budgetsByCategory: Map<Long, com.example.projectwatchapp.data.entities.Budget>,
+        onSaveCategoryAmount: (Long, Double) -> Unit
+    ) {
+        container.removeAllViews()
+        categories.take(3).forEach { category ->
+            val row = layoutInflater.inflate(R.layout.item_budget_category_row, container, false)
+            row.findViewById<TextView>(R.id.textViewBudgetCategoryEmoji).text = emojiForCategory(category.name)
+            row.findViewById<TextView>(R.id.textViewBudgetCategoryName).text = category.name
+            val savedAmount = budgetsByCategory[category.categoryId]?.amount ?: 0.0
+            val amountView = row.findViewById<TextView>(R.id.textViewBudgetCategoryAmount)
+            amountView.text = "R ${"%.2f".format(savedAmount)}"
+            amountView.setOnClickListener {
+                promptCategoryAmount(category.name, savedAmount) { newAmount ->
+                    onSaveCategoryAmount(category.categoryId, newAmount)
+                }
+            }
+            container.addView(row)
+        }
+    }
+
+    private fun promptCategoryAmount(
+        categoryName: String,
+        initialAmount: Double,
+        onSave: (Double) -> Unit
+    ) {
+        val input = EditText(this).apply {
+            setText(initialAmount.toString())
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Set budget for $categoryName")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val amount = input.text.toString().toDoubleOrNull()
+                if (amount == null) {
+                    Toast.makeText(this, getString(R.string.budget_invalid_amount), Toast.LENGTH_SHORT).show()
+                } else {
+                    onSave(amount)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun emojiForCategory(name: String): String {
+        val value = name.lowercase(Locale.getDefault())
+        return when {
+            "groc" in value || "food" in value -> "\uD83D\uDED2"
+            "rent" in value || "home" in value -> "\uD83C\uDFE0"
+            "trans" in value || "car" in value || "taxi" in value -> "\uD83D\uDE97"
+            else -> "\uD83D\uDCC1"
+        }
+    }
+
+    private fun navigateDashboard(userId: Long) {
+        if (userId <= 0) return
+        startActivity(Intent(this, DashboardActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
+        finish()
+    }
+
+    private fun navigateExpenses(userId: Long) {
+        if (userId <= 0) return
+        startActivity(Intent(this, ExpenseActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
+    }
+
+    private fun navigateCategory(userId: Long) {
+        if (userId <= 0) return
+        startActivity(Intent(this, CategoryActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
+    }
+
+    private fun navigateGoals(userId: Long) {
+        if (userId <= 0) return
+        startActivity(Intent(this, GoalsActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
+    }
+
+    private fun navigateRewards(userId: Long) {
+        if (userId <= 0) return
+        startActivity(Intent(this, RewardsActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
+    }
+
+    private fun navigateReports(userId: Long) {
+        if (userId <= 0) return
+        startActivity(Intent(this, ReportsActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
     }
 }
 

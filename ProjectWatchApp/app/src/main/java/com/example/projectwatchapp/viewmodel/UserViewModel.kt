@@ -32,15 +32,14 @@ class UserViewModel(
 
     fun registerUser(
         username: String,
-        email: String,
         password: String
     ) {
         // Basic input cleanup before validation/querying.
         val cleanUsername = username.trim()
-        val cleanEmail = email.trim().lowercase()
+        val generatedEmail = "${cleanUsername.lowercase()}@local.app"
 
-        if (cleanUsername.isBlank() || cleanEmail.isBlank() || password.isBlank()) {
-            _uiState.value = _uiState.value.copy(errorMessage = "All fields are required.")
+        if (cleanUsername.isBlank() || password.isBlank()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Username and password are required.")
             return
         }
 
@@ -51,18 +50,18 @@ class UserViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             // Prevent duplicate accounts by email.
-            val existingUser = userDao.getUserByEmail(cleanEmail)
+            val existingUser = userDao.getUserByEmail(generatedEmail)
             if (existingUser != null) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "An account with this email already exists."
+                    errorMessage = "An account with this username already exists."
                 )
                 return@launch
             }
 
             val createdUser = User(
                 username = cleanUsername,
-                email = cleanEmail,
+                email = generatedEmail,
                 // Never store plain text passwords in DB.
                 passwordHash = hashPassword(password)
             )

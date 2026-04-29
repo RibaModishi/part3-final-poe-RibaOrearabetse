@@ -1,5 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Khensani-inspired brand palette for auth/launch styling -->
+    <color name="brand_green_dark">#0C2819</color>
+    <color name="brand_green_mid">#1A3D28</color>
+    <color name="brand_green_mid_alt">#1A4232</color>
+    <color name="brand_green_deep">#0E3020</color>
+    <color name="brand_green_button">#1F7A4A</color>
+    <color name="brand_cream_surface">#F0EDE4</color>
+
+    <color name="overlay_white_15">#15FFFFFF</color>
+    <color name="overlay_white_20">#20FFFFFF</color>
+    <color name="overlay_white_25">#25FFFFFF</color>
+    <color name="strength_weak">#E35D5D</color>
+    <color name="strength_fair">#D8A93F</color>
+    <color name="strength_good">#8BCF72</color>
+    <color name="strength_strong">#4DD184</color>
 </resources>
