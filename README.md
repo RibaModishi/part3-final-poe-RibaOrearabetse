@@ -83,17 +83,6 @@ This project had significant integration complexity. Key struggle areas included
    - Synchronizing database work, UI references, and business-logic changes from multiple contributors in parallel.
    - Keeping commits coherent while the tree had unrelated local/IDE changes.
 
-## How AI Support Was Used
-
-To support delivery speed and troubleshooting, the team used Claude and DeepSeek for:
-
-- explaining compile/runtime errors and likely causes,
-- comparing alternative implementation approaches,
-- improving code structure/readability suggestions,
-- generating/refining draft text for documentation sections.
-
-All final integration decisions, validation, and project-specific tailoring were done within the team context.
-
 ## What We Learned
 
 - Non-destructive migration planning is essential early in Android projects.
@@ -116,3 +105,10 @@ If your lecturer requires more detail, you can add:
 - Test plan summary
 - Reflection per member
 - References list (if required by your submission rubric)
+
+## Development Setup
+
+- Open the `ProjectWatchApp` folder in Android Studio.
+- Use an Android 8.0 (API 26) emulator or device for run/debug targets.
+- Minimum and target SDK are set to API 26 (Android 8.0).
+

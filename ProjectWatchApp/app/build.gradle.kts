@@ -4,16 +4,12 @@ plugins {
 }
 android {
     namespace = "com.example.projectwatchapp"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.projectwatchapp"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 26
         versionCode = 1
         versionName = "1.0"
 
