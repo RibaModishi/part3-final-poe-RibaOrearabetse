@@ -178,6 +178,12 @@ class ExpenseActivity : ComponentActivity() {
             popup.show()
         }
 
+        // Bottom nav
+        findViewById<Button>(R.id.navExpenseDashboard).setOnClickListener { navigateDashboard(userId) }
+        findViewById<Button>(R.id.navExpenseExpenses).setOnClickListener { /* already here */ }
+        findViewById<Button>(R.id.navExpenseCategory).setOnClickListener { navigateCategory(userId) }
+        findViewById<Button>(R.id.navExpenseBudget).setOnClickListener { navigateBudget(userId) }
+
         val today = LocalDate.now()
         filterStartMillis = today.withDayOfMonth(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
         filterEndMillis = endOfDayEpoch(today)
@@ -356,6 +362,11 @@ class ExpenseActivity : ComponentActivity() {
                         val duration = if (message.contains("XP")) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
                         Toast.makeText(this@ExpenseActivity, message, duration).show()
                         expenseViewModel.clearMessages()
+                    }
+
+                    state.badgeEarned?.let { badge ->
+                        showBadgeEarnedDialog(badge)
+                        expenseViewModel.clearBadge()
                     }
                 }
             }
@@ -604,6 +615,35 @@ class ExpenseActivity : ComponentActivity() {
         }.getOrDefault("-")
     }
 
+    private fun showBadgeEarnedDialog(badge: com.example.projectwatchapp.utils.SessionManager.Badge) {
+        val prettyName = badge.type.replace('_', ' ')
+            .split(' ')
+            .joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+
+        val emoji = when (badge) {
+            com.example.projectwatchapp.utils.SessionManager.Badge.FIRST_EXPENSE -> "🎉"
+            com.example.projectwatchapp.utils.SessionManager.Badge.BUDGET_MASTER -> "💰"
+            com.example.projectwatchapp.utils.SessionManager.Badge.SAVINGS_STARTER -> "🐷"
+            com.example.projectwatchapp.utils.SessionManager.Badge.GOAL_CRUSHER -> "🏆"
+            com.example.projectwatchapp.utils.SessionManager.Badge.WEEK_STREAK -> "🔥"
+            com.example.projectwatchapp.utils.SessionManager.Badge.CATEGORY_WIZARD -> "🧙"
+            com.example.projectwatchapp.utils.SessionManager.Badge.NIGHT_OWL -> "🦉"
+            com.example.projectwatchapp.utils.SessionManager.Badge.POCKET_WATCH_GUARDIAN -> "⌚"
+        }
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("$emoji Badge Unlocked!")
+            .setMessage(
+                "Congratulations! You've earned the\n\n" +
+                        "🏅 $prettyName\n\n" +
+                        "+${badge.xpReward} XP has been added to your profile.\n\n" +
+                        "Keep it up — check the Rewards screen to see all your badges!"
+            )
+            .setPositiveButton("Awesome! 🙌") { dialog, _ -> dialog.dismiss() }
+            .setCancelable(true)
+            .show()
+    }
+
     private fun navigateDashboard(userId: Long) {
         if (userId <= 0) return
         startActivity(Intent(this, DashboardActivity::class.java).putExtra(LoginActivity.EXTRA_USER_ID, userId))
@@ -648,7 +688,8 @@ class ExpenseViewModelFactory(
         if (modelClass.isAssignableFrom(ExpenseViewModel::class.java)) {
             return ExpenseViewModel(
                 database.expenseDao(),
-                database.userDao()
+                database.userDao(),
+                database.earnedBadgeDao()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

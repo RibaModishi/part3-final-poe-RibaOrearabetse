@@ -2,8 +2,10 @@ package com.example.projectwatchapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.projectwatchapp.data.dao.EarnedBadgeDao
 import com.example.projectwatchapp.data.dao.ExpenseDao
 import com.example.projectwatchapp.data.dao.UserDao
+import com.example.projectwatchapp.data.entities.EarnedBadge
 import com.example.projectwatchapp.data.entities.Expense
 import com.example.projectwatchapp.utils.SessionManager
 import java.io.File
@@ -15,7 +17,8 @@ import kotlinx.coroutines.launch
 
 class ExpenseViewModel(
     private val expenseDao: ExpenseDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val earnedBadgeDao: EarnedBadgeDao
 ) : ViewModel() {
 
     companion object {
@@ -91,16 +94,30 @@ class ExpenseViewModel(
                 )
             )
 
-            // Award XP: +5 for every expense, +50 bonus for the very first one (FIRST_EXPENSE badge)
-            var xpToAdd = SessionManager.calculateXpForAction("ADD_EXPENSE")
+            // Award XP for every expense
+            awardXp(userId, SessionManager.calculateXpForAction("ADD_EXPENSE"))
+
+            // Award FIRST_EXPENSE badge if this is their very first expense
+            var badgeAwarded: SessionManager.Badge? = null
             if (isFirstExpense) {
-                xpToAdd += SessionManager.Badge.FIRST_EXPENSE.xpReward
+                val alreadyEarned = earnedBadgeDao.hasUserEarnedBadge(userId, SessionManager.Badge.FIRST_EXPENSE.type)
+                if (!alreadyEarned) {
+                    earnedBadgeDao.insertBadge(
+                        EarnedBadge(
+                            userId = userId,
+                            badgeType = SessionManager.Badge.FIRST_EXPENSE.type,
+                            xpReward = SessionManager.Badge.FIRST_EXPENSE.xpReward
+                        )
+                    )
+                    awardXp(userId, SessionManager.Badge.FIRST_EXPENSE.xpReward)
+                    badgeAwarded = SessionManager.Badge.FIRST_EXPENSE
+                }
             }
-            awardXp(userId, xpToAdd)
 
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
-                successMessage = SUCCESS_MESSAGE_EXPENSE_ADDED
+                successMessage = SUCCESS_MESSAGE_EXPENSE_ADDED,
+                badgeEarned = badgeAwarded
             )
         }
     }
@@ -157,6 +174,10 @@ class ExpenseViewModel(
         _uiState.value = _uiState.value.copy(errorMessage = null, successMessage = null)
     }
 
+    fun clearBadge() {
+        _uiState.value = _uiState.value.copy(badgeEarned = null)
+    }
+
     private suspend fun awardXp(userId: Long, xp: Int) {
         if (xp <= 0) return
         val user = userDao.getUserByIdOnce(userId) ?: return
@@ -198,6 +219,7 @@ data class ExpenseUiState(
     val expenses: List<Expense> = emptyList(),
     val totalSpentInActivePeriod: Double = 0.0,
     val categoryTotalsInActivePeriod: Map<Long, Double> = emptyMap(),
+    val badgeEarned: SessionManager.Badge? = null,
     val errorMessage: String? = null,
     val successMessage: String? = null
 )
