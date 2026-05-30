@@ -21,8 +21,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        run: gradle wrapper --gradle-version=7.6.1
+        working-directory: ProjectWatchApp
+
       - name: Grant Gradle execute permission
-        run: chmod +x ProjectWatchApp/gradlew
+        run: chmod +x gradlew
+        working-directory: ProjectWatchApp
 
       - name: Build debug APK
         run: ./gradlew assembleDebug
