@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/card_white_rounded"
+    android:elevation="2dp"
+    android:orientation="horizontal"
+    android:padding="14dp">
+
+    <!-- Icon -->
+    <TextView
+        android:id="@+id/textViewCategoryEmoji"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_input_light"
+        android:gravity="center"
+        android:text="🛒"
+        android:textSize="24sp" />
+
+    <!-- Middle: name, count, budget amount, progress bar -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textViewCategoryName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category Name"
+            android:textColor="#1A1A1A"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textViewCategoryMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="0 expense(s)"
+            android:textColor="#8A8A8A"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/textViewCategoryBudgetProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="R 0 of R 0"
+            android:textColor="#1A1A1A"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/progressBarCategoryBudget"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:progress="0"
+            android:progressBackgroundTint="#E0E0E0"
+            android:progressTint="#4CAF50" />
+
+    </LinearLayout>
+
+    <!-- Right: 3 action buttons stacked -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/buttonCategoryAddExpense"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/category_action_add_expense"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_view"
+            app:tint="#2196F3" />
+
+        <ImageButton
+            android:id="@+id/buttonCategoryEdit"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/category_action_edit"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_edit_vector"
+            app:tint="#F57C00" />
+
+        <ImageButton
+            android:id="@+id/buttonCategoryDelete"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/category_action_delete"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_delete"
+            app:tint="#F44336" />
+
+    </LinearLayout>
+
+    <!-- Hidden legacy field kept for compatibility -->
+    <TextView
+        android:id="@+id/textViewCategorySpent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+</LinearLayout>
