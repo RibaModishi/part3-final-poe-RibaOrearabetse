@@ -23,12 +23,12 @@ jobs:
 
       - name: Setup Gradle
         run: gradle wrapper --gradle-version=7.6.1
-        working-directory: ProjectWatchApp
+        working-directory: ProjectWatchApp_
 
       - name: Grant Gradle execute permission
         run: chmod +x gradlew
-        working-directory: ProjectWatchApp
+        working-directory: ProjectWatchApp_
 
       - name: Build debug APK
         run: ./gradlew assembleDebug
-        working-directory: ProjectWatchApp
+        working-directory: ProjectWatchApp_
