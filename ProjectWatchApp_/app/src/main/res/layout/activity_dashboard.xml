@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F4F4">
+
+    <LinearLayout
+        android:id="@+id/layoutBottomNav"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:background="@android:color/white"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/buttonOpenGoals"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_dashboard"
+            android:text="@string/dashboard_nav_goals"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/buttonOpenExpenses"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_expenses"
+            android:text="@string/dashboard_nav_expenses"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/buttonOpenRewards"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_category"
+            android:text="@string/dashboard_nav_category"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/buttonOpenBudget"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_budget"
+            android:text="@string/dashboard_nav_budget"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollViewDashboard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@id/layoutBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/card_white_rounded"
+                android:elevation="3dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
+
+                <ImageView
+                    android:id="@+id/buttonMenu"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/dashboard_menu_icon_desc"
+                    android:focusable="true"
+                    android:src="@drawable/ic_menu_hamburger" />
+
+                <TextView
+                    android:id="@+id/textViewDashboardTopTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/dashboard_top_title"
+                    android:textColor="#00BCD4"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/buttonBackToLogin"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/dashboard_back_to_login"
+                    android:drawableTop="@drawable/ic_dash_logout"
+                    android:minWidth="0dp"
+                    android:text=""
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/sectionCategorySpending"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_launch"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dashboard_greeting"
+                    android:textColor="#A8D6B7"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/textViewDashboardWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/dashboard_welcome_back"
+                    android:textColor="@android:color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dashboard_banner_subtitle"
+                    android:textColor="#99FFFFFF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/card_white_rounded"
+                android:elevation="2dp"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/dashboard_level_title"
+                        android:textColor="#1B1B1B"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/textViewLevelPoints"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dashboard_level_points_placeholder"
+                        android:textColor="#1B1B1B"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/dashboard_level_hint"
+                    android:textColor="#888888"
+                    android:textSize="11sp" />
+
+                <FrameLayout
+                    android:id="@+id/progressBarLevel"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_progress_track">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="start"
+                        android:layout_marginEnd="140dp"
+                        android:background="@drawable/bg_progress_yellow" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="96dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/card_white_rounded"
+                    android:elevation="2dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎯"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/textViewGoalsCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dashboard_stat_placeholder"
+                        android:textColor="#1B1B1B"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dashboard_goals_label"
+                        android:textColor="#1B1B1B"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="96dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/card_white_rounded"
+                    android:elevation="2dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎖"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/textViewBadgesCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dashboard_stat_placeholder"
+                        android:textColor="#1B1B1B"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/dashboard_badges_label"
+                        android:textColor="#1B1B1B"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/card_white_rounded"
+                android:elevation="2dp"
+                android:orientation="vertical"
+                android:paddingBottom="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/btn_cyan"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/dashboard_monthly_budget_summary"
+                        android:textColor="@android:color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/buttonDashboardUpdate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="28dp"
+                        android:background="@drawable/input_default"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:text="@string/dashboard_update"
+                        android:textColor="#1A1A1A"
+                        android:textSize="10sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="2dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/input_default"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_budget_label"
+                            android:textColor="#888888"
+                            android:textSize="10sp" />
+                        <TextView
+                            android:id="@+id/textViewDashboardBudgetValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_value_placeholder"
+                            android:textColor="#1A1A1A"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/input_default"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_remaining_label"
+                            android:textColor="#888888"
+                            android:textSize="10sp" />
+                        <TextView
+                            android:id="@+id/textViewDashboardRemainingValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_value_placeholder"
+                            android:textColor="#43A047"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/input_default"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_spent_label"
+                            android:textColor="#888888"
+                            android:textSize="10sp" />
+                        <TextView
+                            android:id="@+id/textViewDashboardSpentValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dashboard_value_placeholder"
+                            android:textColor="#E53935"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/card_white_rounded"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/textViewCategoryListTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/dashboard_category_spending_title"
+                        android:textColor="#1B1B1B"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/buttonAddCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:background="@drawable/btn_cyan"
+                        android:text="@string/action_add_category_short"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dashboard_recently_added_categories"
+                    android:textColor="#007A8A"
+                    android:textSize="13sp"
+                    android:textStyle="italic|bold" />
+
+                <EditText
+                    android:id="@+id/editTextCategoryName"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/input_default"
+                    android:hint="@string/hint_new_category"
+                    android:inputType="textCapWords"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp" />
+
+                <TextView
+                    android:id="@+id/textViewDashboardLoading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/loading_categories"
+                    android:textColor="#7D7D7D"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/textViewCategoryList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/no_categories"
+                    android:textColor="#1B1B1B"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/card_white_rounded"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/dashboard_recent_expenses_title"
+                        android:textColor="#1B1B1B"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/buttonViewExpensesInline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:background="@drawable/btn_cyan"
+                        android:text="@string/dashboard_view_expenses"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dashboard_recently_added_categories"
+                    android:textColor="#007A8A"
+                    android:textSize="13sp"
+                    android:textStyle="italic|bold" />
+
+                <TextView
+                    android:id="@+id/textViewRecentExpenses"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/dashboard_recent_expenses_empty"
+                    android:textColor="#1B1B1B"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

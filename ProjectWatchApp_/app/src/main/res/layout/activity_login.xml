@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFFFF">
+
+    <!--
+      UI integration note (Khensani + Riba):
+      - Visual hierarchy adapts Khensani's sign-in reference (hero banner, compact auth form).
+      - Existing IDs are intentionally preserved so LoginActivity + ViewModel logic remain unchanged.
+    -->
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="28dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="162dp"
+                android:background="@drawable/bg_auth">
+
+                <ImageView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="bottom|start"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginBottom="14dp"
+                    android:contentDescription="@string/app_name_display"
+                    android:src="@drawable/logo_pocket_watch" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|start"
+                    android:layout_marginStart="72dp"
+                    android:layout_marginBottom="18dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name_display"
+                        android:textColor="#EAF4EA"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/login_banner_tagline"
+                        android:textColor="#B8D0BE"
+                        android:textSize="8sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="@string/login_welcome_title"
+                android:textColor="#161616"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:text="@string/login_subtitle"
+                android:textColor="#8D8D8D"
+                android:textSize="11sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/login_label_username"
+                android:textAllCaps="true"
+                android:textColor="#6C6C6C"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/editTextUsername"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_light"
+                android:hint="@string/hint_username_login"
+                android:inputType="textPersonName"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#222222"
+                android:textColorHint="#B3B3B3" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/login_label_password"
+                    android:textAllCaps="true"
+                    android:textColor="#6C6C6C"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/editTextPassword"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_input_light"
+                android:hint="@string/hint_password_login"
+                android:inputType="textPassword"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#222222"
+                android:textColorHint="#B3B3B3" />
+
+            <Button
+                android:id="@+id/buttonLogin"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_btn_green"
+                android:text="@string/action_login_arrow"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/buttonOpenRegister"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="2dp"
+                android:background="@android:color/transparent"
+                android:text="@string/login_signup_prompt"
+                android:textAllCaps="false"
+                android:textColor="#1C3E2D"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBarLogin"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

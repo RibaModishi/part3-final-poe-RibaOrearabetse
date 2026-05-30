@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F4F4F4">
+
+    <LinearLayout
+        android:id="@+id/toolbarGoals"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="@android:color/white"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/buttonGoalsMenu"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:clickable="true"
+            android:contentDescription="@string/dashboard_menu_icon_desc"
+            android:focusable="true"
+            android:padding="6dp"
+            android:src="@drawable/ic_menu_hamburger" />
+
+        <TextView
+            android:id="@+id/textViewGoalsHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/goals_title"
+            android:textColor="#00BCD4"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/buttonGoalsLogout"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:clickable="true"
+            android:contentDescription="@string/dashboard_logout_icon_desc"
+            android:focusable="true"
+            android:padding="6dp"
+            android:src="@drawable/ic_dash_logout" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/layoutGoalsBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarGoals">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textViewGoalsTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Saving Goals"
+                        android:textColor="#1A1A1A"
+                        android:textSize="32sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Track your financial objectives"
+                        android:textColor="#7A7A7A"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/buttonAddGoalQuick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:background="@drawable/btn_cyan"
+                    android:text="+ Add Goal"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/card_white_rounded"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎯"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/textViewGoalsCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="0"
+                        android:textColor="#1A1A1A"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Goals"
+                        android:textColor="#7A7A7A"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/card_white_rounded"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✅"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/textViewGoalsCompletedCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="0"
+                        android:textColor="#1A1A1A"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Completed"
+                        android:textColor="#7A7A7A"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/card_white_rounded"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total Target"
+                        android:textColor="#7A7A7A"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/textViewGoalsTotalTarget"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="R0.00"
+                        android:textColor="#1A1A1A"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎯"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:text="Pinned Goals"
+                android:textColor="#1A1A1A"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/layoutPinnedGoalsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/textViewGoalsLoading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/loading_goals"
+                android:textColor="#888888"
+                android:visibility="gone" />
+
+            <!-- Hidden legacy controls kept for compatibility with existing IDs -->
+            <EditText android:id="@+id/editTextGoalName" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <EditText android:id="@+id/editTextGoalTarget" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <TextView android:id="@+id/textViewSelectedGoalDeadline" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Button android:id="@+id/buttonPickGoalDeadline" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Button android:id="@+id/buttonClearGoalDeadline" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Button android:id="@+id/buttonAddGoal" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <TextView android:id="@+id/textViewGoalsList" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Spinner android:id="@+id/spinnerGoals" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <EditText android:id="@+id/editTextDepositAmount" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <EditText android:id="@+id/editTextDepositNote" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Button android:id="@+id/buttonAddDeposit" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Button android:id="@+id/buttonTogglePinGoal" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <TextView android:id="@+id/textViewDepositHistory" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <EditText android:id="@+id/editTextDeleteGoalId" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+            <Button android:id="@+id/buttonDeleteGoal" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone"/>
+        </LinearLayout>
+    </ScrollView>
+    <LinearLayout
+        android:id="@+id/layoutGoalsBottomNav"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/navGoalsDashboard"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_dashboard"
+            android:text="@string/dashboard_nav_goals"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/navGoalsExpenses"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_expenses"
+            android:text="@string/dashboard_nav_expenses"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/navGoalsCategory"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_category"
+            android:text="@string/dashboard_nav_category"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/navGoalsBudget"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:drawableTop="@drawable/ic_nav_budget"
+            android:text="@string/dashboard_nav_budget"
+            android:textAllCaps="false"
+            android:textColor="#121212"
+            android:textSize="10sp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

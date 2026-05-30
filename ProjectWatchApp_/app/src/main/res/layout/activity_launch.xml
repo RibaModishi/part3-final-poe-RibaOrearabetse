@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_launch">
+
+    <ImageView
+        android:id="@+id/imageLogo"
+        android:layout_width="172dp"
+        android:layout_height="165dp"
+        android:layout_marginTop="64dp"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/logo_pocket_watch"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvBubbleLeftTop"
+        android:layout_width="130dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="34dp"
+        android:background="@drawable/bg_speech_bubble"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/bubble_1_text"
+        android:textColor="@android:color/white"
+        android:textSize="11sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageLogo" />
+
+    <TextView
+        android:id="@+id/tvBubbleRightTop"
+        android:layout_width="132dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_speech_bubble"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/bubble_2_text"
+        android:textColor="@android:color/white"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageLogo" />
+
+    <TextView
+        android:id="@+id/tvBubbleLeftMid"
+        android:layout_width="130dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="42dp"
+        android:background="@drawable/bg_speech_bubble"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/bubble_3_text"
+        android:textColor="@android:color/white"
+        android:textSize="11sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvBubbleLeftTop" />
+
+    <TextView
+        android:id="@+id/tvBubbleRightMid"
+        android:layout_width="130dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="36dp"
+        android:background="@drawable/bg_speech_bubble"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/bubble_4_text"
+        android:textColor="@android:color/white"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvBubbleRightTop" />
+
+    <LinearLayout
+        android:id="@+id/layoutPills"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/btn_get_started"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_pill"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="@string/feature_track"
+            android:textColor="@android:color/white"
+            android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_pill"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="@string/feature_budget"
+            android:textColor="@android:color/white"
+            android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="@string/feature_earn"
+            android:textColor="@android:color/white"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_get_started"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/bg_btn_green"
+        android:text="@string/btn_get_started"
+        android:textColor="@android:color/white"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/tv_sign_in"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_sign_in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="28dp"
+        android:text="@string/sign_in_prompt"
+        android:textColor="#D4FFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

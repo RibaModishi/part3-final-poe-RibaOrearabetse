@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/menu_dashboard"
+            android:icon="@drawable/ic_nav_dashboard"
+            android:title="@string/title_dashboard"/>
+
+        <item
+            android:id="@+id/menu_expenses"
+            android:icon="@drawable/ic_nav_expenses"
+            android:title="@string/title_expenses"/>
+
+        <item
+            android:id="@+id/menu_category"
+            android:icon="@drawable/ic_nav_category"
+            android:title="@string/title_category"/>
+
+        <item
+            android:id="@+id/menu_budget"
+            android:icon="@drawable/ic_nav_budget"
+            android:title="@string/title_budget"/>
+
+        <item
+            android:id="@+id/menu_goals"
+            android:icon="@drawable/ic_goals"
+            android:title="@string/saving_goals"/>
+
+        <item
+            android:id="@+id/menu_reports"
+            android:icon="@drawable/ic_report"
+            android:title="@string/reports_title"/>
+        <item
+            android:id="@+id/menu_rewards"
+            android:icon="@drawable/ic_goals"
+            android:title="Rewards"/>
+
+        <item
+            android:id="@+id/menu_info"
+            android:icon="@drawable/ic_info"
+            android:title="@string/title_info"/>
+
+    </group>
+
+    <!-- Logout at the bottom -->
+    <item
+        android:id="@+id/menu_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="@string/menu_logout"/>
+
+</menu>
