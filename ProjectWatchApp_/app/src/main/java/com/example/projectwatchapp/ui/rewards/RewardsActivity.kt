@@ -309,7 +309,11 @@ class RewardsViewModelFactory(
         if (modelClass.isAssignableFrom(RewardsViewModel::class.java)) {
             return RewardsViewModel(
                 database.earnedBadgeDao(),
-                database.userDao()
+                database.userDao(),
+                database.expenseDao(),
+                database.savingsGoalDao(),
+                database.categoryDao(),
+                database.budgetDao()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

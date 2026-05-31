@@ -2,7 +2,11 @@ package com.example.projectwatchapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.projectwatchapp.data.dao.BudgetDao
+import com.example.projectwatchapp.data.dao.CategoryDao
 import com.example.projectwatchapp.data.dao.EarnedBadgeDao
+import com.example.projectwatchapp.data.dao.ExpenseDao
+import com.example.projectwatchapp.data.dao.SavingsGoalDao
 import com.example.projectwatchapp.data.dao.UserDao
 import com.example.projectwatchapp.data.entities.EarnedBadge
 import com.example.projectwatchapp.data.entities.User
@@ -11,21 +15,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
- * RewardsViewModel = business logic for gamification.
- *
- * Handles:
- * - Current user level + XP display
- * - Badge collection loading
- * - Granting badges (once only)
- * - Adding badge XP reward to user profile
- * - Level progress helper values for UI
- */
 class RewardsViewModel(
     private val earnedBadgeDao: EarnedBadgeDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val expenseDao: ExpenseDao,
+    private val savingsGoalDao: SavingsGoalDao,
+    private val categoryDao: CategoryDao,
+    private val budgetDao: BudgetDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RewardsUiState())
@@ -34,24 +33,82 @@ class RewardsViewModel(
     private var userObserverJob: Job? = null
     private var badgesObserverJob: Job? = null
 
-    /**
-     * Begin observing both the user profile and earned badges.
-     * Use this after login when opening Rewards screen.
-     */
     fun loadRewardsData(userId: Long) {
         _uiState.value = _uiState.value.copy(activeUserId = userId, errorMessage = null)
         observeUser(userId)
         observeBadges(userId)
+        viewModelScope.launch {
+            checkAndAutoAwardBadges(userId)
+        }
     }
 
     /**
-     * Grant a badge to the user if not already earned.
-     *
-     * Steps:
-     * 1) Ensure user exists
-     * 2) Ensure badge is not duplicate
-     * 3) Insert earned badge
-     * 4) Add badge XP to user and update level
+     * Automatically checks conditions and awards badges the user has earned
+     * but hasn't been given yet. Skips: night_owl, pocket_watch_guardian, week_streak.
+     */
+    private suspend fun checkAndAutoAwardBadges(userId: Long) {
+        val user = _uiState.value.user ?: userDao.getUserById(userId).first() ?: return
+
+        // --- FIRST_EXPENSE: has at least 1 expense ---
+        val expenseCount = expenseDao.countExpensesForUser(userId)
+        if (expenseCount >= 1) {
+            tryAutoAward(userId, user, SessionManager.Badge.FIRST_EXPENSE)
+        }
+
+        // --- SAVINGS_STARTER: has at least 1 savings goal created ---
+        val goals = savingsGoalDao.getGoalsForUser(userId).first()
+        if (goals.isNotEmpty()) {
+            tryAutoAward(userId, user, SessionManager.Badge.SAVINGS_STARTER)
+        }
+
+        // --- GOAL_CRUSHER: has at least 1 completed savings goal ---
+        val completedGoals = goals.filter { it.isCompleted }
+        if (completedGoals.isNotEmpty()) {
+            tryAutoAward(userId, user, SessionManager.Badge.GOAL_CRUSHER)
+        }
+
+        // --- CATEGORY_WIZARD: has at least 3 categories ---
+        val categories = categoryDao.getCategoriesForUser(userId).first()
+        if (categories.size >= 3) {
+            tryAutoAward(userId, user, SessionManager.Badge.CATEGORY_WIZARD)
+        }
+
+        // --- BUDGET_MASTER: has at least 1 active budget set ---
+        val budgets = budgetDao.getActiveBudgetsForUser(userId).first()
+        if (budgets.isNotEmpty()) {
+            tryAutoAward(userId, user, SessionManager.Badge.BUDGET_MASTER)
+        }
+    }
+
+    /**
+     * Awards a badge silently (no toast) if not already earned.
+     * Re-fetches current user XP fresh each time to avoid stale accumulation.
+     */
+    private suspend fun tryAutoAward(userId: Long, user: User, badge: SessionManager.Badge) {
+        val alreadyEarned = earnedBadgeDao.hasUserEarnedBadge(userId, badge.type)
+        if (alreadyEarned) return
+
+        earnedBadgeDao.insertBadge(
+            EarnedBadge(
+                userId = userId,
+                badgeType = badge.type,
+                xpReward = badge.xpReward
+            )
+        )
+
+        // Re-fetch latest user to get current XP (avoids double-adding from stale state)
+        val freshUser = userDao.getUserById(userId).first() ?: return
+        val updatedXp = freshUser.xp + badge.xpReward
+        val updatedLevel = SessionManager.getLevelFromXp(updatedXp)
+        userDao.updateXpAndLevel(
+            userId = userId,
+            newXp = updatedXp,
+            newLevel = updatedLevel
+        )
+    }
+
+    /**
+     * Manual award from the spinner/button (used for testing or manual grants).
      */
     fun awardBadge(badge: SessionManager.Badge) {
         val userId = _uiState.value.activeUserId
@@ -104,23 +161,15 @@ class RewardsViewModel(
         }
     }
 
-    /**
-     * Helper for UI card:
-     * - current XP
-     * - XP needed to next level
-     * - progress percent in current level band
-     */
     fun getLevelProgress(): LevelProgress {
         val user = _uiState.value.user ?: return LevelProgress(0, 0, 0)
         val currentXp = user.xp
         val currentLevel = SessionManager.getLevelFromXp(currentXp)
         val xpToNext = SessionManager.getXpToNextLevel(currentXp)
 
-        // For a simple progress number, we estimate current level start threshold
-        // as (current xp - xp gained inside this level band).
         val nextThreshold = currentXp + xpToNext
         val levelBandSize = when {
-            xpToNext == 0 -> 1 // already at max range
+            xpToNext == 0 -> 1
             else -> (nextThreshold - estimateLevelStart(currentXp)).coerceAtLeast(1)
         }
         val progressInBand = when {
@@ -135,9 +184,6 @@ class RewardsViewModel(
         )
     }
 
-    /**
-     * Returns all available badges with lock/unlock state for UI rendering.
-     */
     fun getBadgeCollectionState(): List<BadgeUiModel> {
         val earnedTypes = _uiState.value.earnedBadges.map { it.badgeType }.toSet()
         return SessionManager.Badge.entries.map { badge ->
@@ -177,10 +223,6 @@ class RewardsViewModel(
         }
     }
 
-    /**
-     * Approximate start XP for current level by scanning upward from 0.
-     * This avoids exposing private threshold list from SessionManager.
-     */
     private fun estimateLevelStart(currentXp: Int): Int {
         val level = SessionManager.getLevelFromXp(currentXp)
         var candidate = currentXp
