@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "project_watch_app": {
+      "users": {
+        "$userId": {
+          "expenses": {
+            ".read": true,
+            ".write": true
+          }
+        }
+      },
+      "_ping": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
