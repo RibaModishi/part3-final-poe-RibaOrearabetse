@@ -112,3 +112,6 @@ If your lecturer requires more detail, you can add:
 - Use an Android 8.0 (API 26) emulator or device for run/debug targets.
 - Minimum and target SDK are set to API 26 (Android 8.0).
 
+Realtime Database URL
+https://pocketwatchapp-9a5ca-default-rtdb.europe-west1.firebasedatabase.app/
+
