@@ -1,4 +1,7 @@
 <resources>
+    <!-- Must match Realtime Database URL in Firebase Console (Data tab, top of page) -->
+    <string name="firebase_realtime_database_url" translatable="false">https://pocketwatchapp-9a5ca-default-rtdb.europe-west1.firebasedatabase.app</string>
+
     <string name="app_name">ProjectWatchApp</string>
     <string name="app_name_display">Pocket Watch</string>
     <string name="login_title">Pocket Watch Login</string>

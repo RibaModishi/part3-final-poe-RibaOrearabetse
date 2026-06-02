@@ -24,6 +24,10 @@ interface ExpenseDao {
 
     @Query("SELECT COUNT(*) FROM expenses WHERE userId = :userId")
     suspend fun countExpensesForUser(userId: Long): Long
+
+    /** Used when merging expenses downloaded from Firebase into local Room storage. */
+    @Query("SELECT * FROM expenses WHERE expenseId = :expenseId LIMIT 1")
+    suspend fun getExpenseByIdOnce(expenseId: Long): Expense?
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId AND categoryId = :categoryId AND date BETWEEN :startDate AND :endDate")
     suspend fun getTotalSpentForCategory(userId: Long, categoryId: Long, startDate: Long, endDate: Long): Double?
 

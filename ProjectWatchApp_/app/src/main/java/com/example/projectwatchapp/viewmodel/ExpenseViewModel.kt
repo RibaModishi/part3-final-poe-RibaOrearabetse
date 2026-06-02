@@ -7,6 +7,7 @@ import com.example.projectwatchapp.data.dao.ExpenseDao
 import com.example.projectwatchapp.data.dao.UserDao
 import com.example.projectwatchapp.data.entities.EarnedBadge
 import com.example.projectwatchapp.data.entities.Expense
+import com.example.projectwatchapp.firebase.FirebaseRealtimeDatabaseService
 import com.example.projectwatchapp.utils.SessionManager
 import java.io.File
 import kotlinx.coroutines.Job
@@ -18,7 +19,8 @@ import kotlinx.coroutines.launch
 class ExpenseViewModel(
     private val expenseDao: ExpenseDao,
     private val userDao: UserDao,
-    private val earnedBadgeDao: EarnedBadgeDao
+    private val earnedBadgeDao: EarnedBadgeDao,
+    private val firebaseDatabase: FirebaseRealtimeDatabaseService = FirebaseRealtimeDatabaseService()
 ) : ViewModel() {
 
     companion object {
@@ -82,17 +84,22 @@ class ExpenseViewModel(
 
             val isFirstExpense = expenseDao.countExpensesForUser(userId) == 0L
 
-            expenseDao.insertExpense(
-                Expense(
-                    userId = userId,
-                    categoryId = categoryId,
-                    amount = amount,
-                    description = cleanDescription,
-                    date = date,
-                    notes = notes?.trim()?.takeIf { it.isNotEmpty() },
-                    photoPath = photoPath?.trim()?.takeIf { it.isNotEmpty() }
-                )
+            val newExpense = Expense(
+                userId = userId,
+                categoryId = categoryId,
+                amount = amount,
+                description = cleanDescription,
+                date = date,
+                notes = notes?.trim()?.takeIf { it.isNotEmpty() },
+                photoPath = photoPath?.trim()?.takeIf { it.isNotEmpty() }
             )
+            val insertedId = expenseDao.insertExpense(newExpense)
+            val expenseForCloud = newExpense.copy(expenseId = insertedId)
+
+            // Push the new expense to the online Firebase database
+            val cloudSyncError = firebaseDatabase.writeExpense(userId, expenseForCloud)
+                .exceptionOrNull()
+                ?.message
 
             // Award XP for every expense
             awardXp(userId, SessionManager.calculateXpForAction("ADD_EXPENSE"))
@@ -117,7 +124,10 @@ class ExpenseViewModel(
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 successMessage = SUCCESS_MESSAGE_EXPENSE_ADDED,
-                badgeEarned = badgeAwarded
+                badgeEarned = badgeAwarded,
+                cloudSyncMessage = cloudSyncError?.let {
+                    "Saved on device only. Cloud sync failed: $it"
+                }
             )
         }
     }
@@ -132,6 +142,7 @@ class ExpenseViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             expense.photoPath?.let { path -> runCatching { File(path).delete() } }
             expenseDao.deleteExpense(expense)
+            firebaseDatabase.deleteExpense(expense.userId, expense.expenseId)
             _uiState.value = _uiState.value.copy(isLoading = false, successMessage = "Expense deleted.")
         }
     }
@@ -178,6 +189,40 @@ class ExpenseViewModel(
         _uiState.value = _uiState.value.copy(badgeEarned = null)
     }
 
+    fun clearCloudSyncMessage() {
+        _uiState.value = _uiState.value.copy(cloudSyncMessage = null)
+    }
+
+    /**
+     * Pulls expenses from Firebase and merges any missing rows into local Room storage.
+     * Call after login or when the user opens the expenses screen with network available.
+     */
+    fun syncExpensesFromCloud() {
+        val userId = _uiState.value.activeUserId ?: return
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, cloudSyncMessage = null)
+            firebaseDatabase.readExpensesForUser(userId)
+                .onSuccess { cloudExpenses ->
+                    cloudExpenses.forEach { cloudExpense ->
+                        val exists = expenseDao.getExpenseByIdOnce(cloudExpense.expenseId) != null
+                        if (!exists) {
+                            expenseDao.insertExpense(cloudExpense)
+                        }
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        cloudSyncMessage = "Synced ${cloudExpenses.size} expense(s) from cloud."
+                    )
+                }
+                .onFailure { error ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        cloudSyncMessage = "Cloud sync failed: ${error.message}"
+                    )
+                }
+        }
+    }
+
     private suspend fun awardXp(userId: Long, xp: Int) {
         if (xp <= 0) return
         val user = userDao.getUserByIdOnce(userId) ?: return
@@ -221,5 +266,6 @@ data class ExpenseUiState(
     val categoryTotalsInActivePeriod: Map<Long, Double> = emptyMap(),
     val badgeEarned: SessionManager.Badge? = null,
     val errorMessage: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val cloudSyncMessage: String? = null
 )

@@ -191,6 +191,8 @@ class ExpenseActivity : ComponentActivity() {
         textViewFilterEndDate.text = formatEpoch(filterEndMillis)
 
         expenseViewModel.loadAllExpenses(userId)
+        // Download any expenses stored in Firebase Realtime Database into local Room storage
+        expenseViewModel.syncExpensesFromCloud()
 
         // Load categories into the main spinner AND auto-open sheet if launched from Category page
         lifecycleScope.launch {
@@ -367,6 +369,11 @@ class ExpenseActivity : ComponentActivity() {
                     state.badgeEarned?.let { badge ->
                         showBadgeEarnedDialog(badge)
                         expenseViewModel.clearBadge()
+                    }
+
+                    state.cloudSyncMessage?.let { message ->
+                        Toast.makeText(this@ExpenseActivity, message, Toast.LENGTH_LONG).show()
+                        expenseViewModel.clearCloudSyncMessage()
                     }
                 }
             }
