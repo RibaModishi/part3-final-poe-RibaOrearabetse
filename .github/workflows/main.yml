@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        run: gradle wrapper --gradle-version=8.13 --gradle-distribution-sha256-sum=e37613e0b27c7b52851be86411610738793889ae63bc14429f98def491become586
+        run: gradle wrapper --gradle-version=8.13 --gradle-distribution-sha256-sum=0e0ec66112d10db3ee0abcc262d521c54ca88ccd04a17148bdb4e5c2e900a45a
         working-directory: ProjectWatchApp_
 
       - name: Grant Gradle execute permission
