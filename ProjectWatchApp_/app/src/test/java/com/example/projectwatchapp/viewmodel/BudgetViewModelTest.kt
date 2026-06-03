@@ -44,6 +44,8 @@ private class FakeBudgetDao : BudgetDao {
     override suspend fun deleteBudget(budget: Budget) = Unit
     override fun getActiveBudgetsForUser(userId: Long): Flow<List<Budget>> = budgetsFlow
     override suspend fun getActiveBudgetForCategory(userId: Long, categoryId: Long): Budget? = null
+    override suspend fun getMonthlyGoalBudget(userId: Long): Budget? = null
+    override fun observeMonthlyGoalBudget(userId: Long): Flow<Budget?> = MutableStateFlow(null)
 }
 
 private class FakeExpenseDao : ExpenseDao {
@@ -53,6 +55,8 @@ private class FakeExpenseDao : ExpenseDao {
     override fun getExpensesForUser(userId: Long): Flow<List<Expense>> = MutableStateFlow(emptyList())
     override fun getExpensesBetween(userId: Long, startDate: Long, endDate: Long): Flow<List<Expense>> =
         MutableStateFlow(emptyList())
+    override suspend fun countExpensesForUser(userId: Long): Long = 0L
+    override suspend fun getExpenseByIdOnce(expenseId: Long): Expense? = null
 
     override suspend fun getTotalSpentForCategory(
         userId: Long,
