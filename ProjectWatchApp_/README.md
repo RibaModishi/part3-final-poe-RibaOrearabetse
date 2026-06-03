@@ -1,115 +1,244 @@
-# ProjectWatchApp
+# Pocket Watch App
 
-Pocket Watch style budget tracker built with Kotlin, Activities, and Room.
+Pocket Watch is a mobile budgeting and personal finance tracker for **PROG7313 Part 3**. It helps users track spending, plan budgets, set savings goals, and stay motivated through light gamification. The app is built in **Kotlin** with XML layouts, stores expense data in **Firebase Realtime Database**, and includes reporting graphs and monthly spending goals required for the final PoE.
 
-## ViewModel section (completed)
+**Repository:** [github.com/EMGPRS/part3-final-poe-Maluleke-Khensani](https://github.com/EMGPRS/part3-final-poe-Maluleke-Khensani)  
+**Android project folder:** `ProjectWatchApp_`
 
-The business-logic layer is implemented in six ViewModels:
+---
 
-- `UserViewModel` for registration/login, current user loading, and XP/level updates.
-- `CategoryViewModel` for category add/list/delete logic and UI state.
-- `ExpenseViewModel` for adding, listing, period filtering, totals, and delete.
-- `BudgetViewModel` for monthly min/max goals, category budget caps, and status bands.
-- `GoalsViewModel` for savings goal creation, deposits, and pinning.
-- `RewardsViewModel` for badges and reward helpers.
+## Group Members
 
-All screens observe `StateFlow` from their ViewModel and keep DAO calls inside `viewModelScope`.
+| Name | Student Number | Group |
+|---|---|---|
+| Joy Chivava | ST10453506 | 3 |
+| Khensani Maluleke | ST10451309 | 2 |
+| Khumo-Thato Chabeli | ST10448834 | 3 |
+| Orearabetse Riba | ST10446648 | 2 |
 
-## Data safety and migrations
+For Part 3, work was split as follows: **Khumo-Thato** handled Firebase and online data, and wrote the **Data** and **Security** parts under Design Considerations; **Khensani** focused on business logic, bug fixes, GitHub Actions, and tests; **Joy** continued ViewModel and flow logic from Part 2, including evaluations; **Riba** prepared this README and submission documentation, and also took on the APK process preparing `release/PocketWatch-Part3.apk` for submission.
 
-The app now uses an explicit Room migration from version 1 to 2:
+---
 
-- `MIGRATION_1_2` adds `expenses.photoPath`.
-- Existing tables and rows are preserved.
-- Destructive migration fallback has been removed.
+## Purpose of the App
 
-This means user accounts and other existing local data are kept during the receipt-photo schema update.
+Pocket Watch is aimed at students and young adults who want a straightforward way to manage money without full banking apps. Users can register and sign in, log expenses by category and date, plan a monthly budget, track savings goals, view spending reports, earn XP and badges, and read help content in the app.
 
-## Budget status wiring
+Part 3 extended our Part 2 prototype by moving expense storage online, improving the UI based on lecturer feedback, and adding the spending graph, min/max monthly goals, and a clear visual indicator of whether the user is within their spending targets for the month. The final demo was recorded on a physical device.
 
-Budget status is now based on **actual monthly expenses** (from `ExpenseDao`) rather than allocated category caps:
+---
 
-- Green: spend < 80% of max goal
-- Yellow: spend 80–100% of max goal
-- Red: spend > 100% of max goal
+## Features Overview
 
-## Quick architecture
+**Core flows**
 
-```mermaid
-flowchart LR
-  A[Activity UI] --> B[ViewModel]
-  B --> C[Room DAO]
-  C --> D[(SQLite DB)]
-  C --> B
-  B --> A
+- Authentication (registration, login, password hashing)
+- Expenses (add, filter, totals, receipts where supported)
+- Categories and budgets (monthly planning, per-category amounts)
+- Savings goals (create, update progress, pin, history)
+- Rewards (XP, levels, badges, level journey)
+- Reports (daily / weekly / category views)
+- Info & Help (FAQ)
+
+**Part 3 additions**
+
+- **Category spending graph** — On the Reports screen, the user selects a date range (*From* / *To*). The Category tab shows spending per category (bar chart, donut chart, and breakdown list).
+- **Min and max monthly goals** — Set on the Budget screen. The summary shows the max goal, actual spend for the current month, and how category budgets fit under the cap.
+- **Spending status** — `BudgetViewModel` compares current-month spend to the max goal and shows a plain-language status (on track, close to limit, or over). This uses green / yellow / red bands in the budget summary.
+- **Online storage** — Expenses sync to Firebase Realtime Database (see below).
+
+---
+
+## Custom Features (Part 1 Design)
+
+These are the two features we described in our Part 1 design document and implemented in the app.
+
+### 1. Rewards and gamification
+
+Users earn XP for using the app (for example logging expenses). Levels, badges, and a level journey screen make budgeting feel less like a chore. Logic lives in `RewardsViewModel` and `SessionManager`; the main screen is `RewardsActivity`.
+
+### 2. Savings goals with progress history
+
+Users can create goals with target amounts, update progress, pin important goals, and open a progress history sheet to see how contributions changed over time — not just a single “remaining amount” on a dashboard.
+
+---
+
+## Design Considerations
+
+We kept the same overall shape as Part 2: **Activities** for screens, **ViewModels** for logic and validation, and **RoomDB** for local data. Part 3 added a small Firebase layer so expenses can live online while the UI still reads from RoomDB most of the time.
+
+**UI** — Khensani led the visual side. Layouts live under `app/src/main/res/`. The `ui-reference` folder is only a design reference and is not what Gradle compiles. We fixed report calculations from Part 2 before polishing charts, and kept navigation (drawer and bottom nav) consistent across screens.
+
+**Data** — *(Khumo-Thato Chabeli)* RoomDB holds users, expenses, budgets, categories, goals, and badges. When someone adds or deletes an expense, we write to Firebase as well. After login (or when opening expenses), the app can pull from the cloud and merge anything that exists online but not yet locally. Database migrations were important in Part 2; we added an instrumentation test so upgrading the schema does not wipe expense rows.
+
+**Security** — *(Khumo-Thato Chabeli)* Passwords are hashed for local login. Firebase rules in `ProjectWatchApp_/firebase/database.rules.json` scope data under `project_watch_app` (tightened for production in a real deployment).
+
+---
+
+## Firebase Realtime Database
+
+Firebase project: **pocketwatchapp-9a5ca**
+
+| | |
+|---|---|
+| Console | https://console.firebase.google.com/project/pocketwatchapp-9a5ca |
+| Database URL | https://pocketwatchapp-9a5ca-default-rtdb.europe-west1.firebasedatabase.app/ |
+| Package name | `com.example.projectwatchapp` |
+
+**Structure in the cloud**
+
+```
+project_watch_app/
+  users/
+    {userId}/
+      expenses/
+        {expenseId}/
 ```
 
-## Tests added
+**How we use it**
 
-- `BudgetViewModelTest` (unit test): validates monthly status bands and input validation.
-- `AppDatabaseMigrationTest` (instrumented): validates `MIGRATION_1_2` adds `photoPath` and preserves existing expense rows.
+- **Write** — When a user saves an expense, `ExpenseViewModel` stores it in RoomDB and `FirebaseRealtimeDatabaseService.writeExpense()` pushes it to Firebase. Deletes call `deleteExpense()` on the cloud path.
+- **Read** — `readExpensesForUser()` loads all expenses for a user; `listenToExpenses()` can subscribe to live updates. `ExpenseViewModel.syncExpensesFromCloud()` merges cloud data into RoomDB after login.
+- **Config** — `google-services.json` in the `app` module and the database URL in `strings.xml` / `ProjectWatchApplication.kt`.
 
-## Submission summary (ready to paste)
+Main files: `FirebaseRealtimeDatabaseService.kt`, `FirebaseExpenseRecord.kt`, `ExpenseViewModel.kt`. We use `Log` with tag `FirebaseDatabase` when debugging sync issues.
 
-For my section, I (Riba) completed and verified the ViewModel/business-logic layer across authentication, categories, expenses, budgeting, goals, and rewards. I implemented a non-destructive Room migration (`MIGRATION_1_2`) to add optional expense receipt support while preserving existing local data (no table wipe). I also improved budget logic to use live current-month expense totals for status calculations (green/yellow/red) instead of demo allocation values. Finally, I validated the work by running build, unit tests, and instrumented tests successfully (`assembleDebug`, `testDebugUnitTest`, `connectedDebugAndroidTest`).
+---
 
-## In-text citations (ready to use)
+## GitHub and Version Control
 
-- ViewModel and lifecycle-aware UI state handling (`StateFlow`, `viewModelScope`) follow Android architecture guidance (Android Developers, n.d.a; Android Developers, n.d.b; Android Developers, n.d.c).
-- Room entities/DAO patterns and SQL-backed local persistence follow official Room documentation (Android Developers, n.d.d; Android Developers, n.d.e).
-- The non-destructive schema change from DB version 1 to 2 follows Room migration guidance (Android Developers, n.d.f).
-- Build/test execution and Gradle command usage follow Gradle and Android command-line build documentation (Android Developers, n.d.g; Gradle, n.d.).
-- Unit and instrumentation testing practices align with JUnit and Android testing references (JUnit Team, n.d.; Android Developers, n.d.h).
+All Kotlin source is on GitHub (no zip submission). We work on **`main`** and commit as features are integrated. The Android code sits in **`ProjectWatchApp_`** — open that folder in Android Studio, not the repo root.
 
-## Reference list (IIE Harvard style)
+Early commits included RoomDB migrations, UI work, and report fixes. Part 3 added Firebase integration and several workflow fixes for CI (Gradle path, checksum, then a simpler `main.yml` without an extra Gradle setup step).
 
-Android Developers. n.d.a. *ViewModel overview*. [online] Available at: <https://developer.android.com/topic/libraries/architecture/viewmodel> [Accessed 22 April 2026].
+---
 
-Android Developers. n.d.b. *StateFlow and SharedFlow*. [online] Available at: <https://developer.android.com/kotlin/flow/stateflow-and-sharedflow> [Accessed 22 April 2026].
+## GitHub Actions
 
-Android Developers. n.d.c. *ViewModel with Kotlin coroutines*. [online] Available at: <https://developer.android.com/topic/libraries/architecture/coroutines> [Accessed 23 April 2026].
+We use a workflow called **Android Build** (`.github/workflows/main.yml`). On each push to `main`, GitHub checks out the repo, sets up **JDK 17**, and runs `./gradlew assembleDebug` inside `ProjectWatchApp_`.
 
-Android Developers. n.d.d. *Room persistence library*. [online] Available at: <https://developer.android.com/training/data-storage/room> [Accessed 23 April 2026].
+Getting CI right took a few attempts. The first workflows failed because the working directory pointed at the wrong folder and an extra Gradle setup step caused problems. After Firebase was added we hit Gradle version/checksum errors. The pipeline we rely on now is **run #12** — build succeeds in about four to five minutes without the redundant setup step.
 
-Android Developers. n.d.e. *Accessing data using Room DAOs*. [online] Available at: <https://developer.android.com/training/data-storage/room/accessing-data> [Accessed 24 April 2026].
+We referenced:
 
-Android Developers. n.d.f. *Migrate Room databases*. [online] Available at: <https://developer.android.com/training/data-storage/room/migrating-db-versions> [Accessed 24 April 2026].
+- [Automated Build Android App with GitHub Action](https://github.com/marketplace/actions/automated-build-android-app-with-github-action) (accessed 03 November 2025)
+- [IMAD5112 build.yml example](https://github.com/IMAD5112/Github-actions/blob/main/.github/workflows/build.yml) (accessed 03 November 2025)
 
-Android Developers. n.d.g. *Build your app from the command line*. [online] Available at: <https://developer.android.com/build/building-cmdline> [Accessed 25 April 2026].
+A successful build is visible on the repo **Actions** tab (workflow **Android Build**, run #12).
 
-Android Developers. n.d.h. *Test your app on Android*. [online] Available at: <https://developer.android.com/training/testing> [Accessed 25 April 2026].
+---
 
-Gradle. n.d. *Gradle User Manual*. [online] Available at: <https://docs.gradle.org/current/userguide/userguide.html> [Accessed 26 April 2026].
+## Testing
 
-JUnit Team. n.d. *JUnit 4*. [online] Available at: <https://junit.org/junit4/> [Accessed 26 April 2026].
+**Automated**
 
-## Subsection in-text citations (mapped)
+- `BudgetViewModelTest` — monthly goal validation and GREEN / YELLOW / RED status for spend vs max goal
+- `AppDatabaseMigrationTest` — migration from v1 to v2 keeps expense data when `photoPath` is added
+- Standard `ExampleUnitTest` and `ExampleInstrumentedTest` scaffolding
 
-- **ViewModel section (completed):** (Android Developers, n.d.a; Android Developers, n.d.b; Android Developers, n.d.c)
-- **Data safety and migrations:** (Android Developers, n.d.d; Android Developers, n.d.f)
-- **Budget status wiring:** (Android Developers, n.d.e; Android Developers, n.d.d)
-- **Quick architecture:** (Android Developers, n.d.a; Android Developers, n.d.d)
-- **Tests added:** (Android Developers, n.d.h; JUnit Team, n.d.)
-- **Build and verification commands in submission summary:** (Android Developers, n.d.g; Gradle, n.d.)
+CI currently builds the debug APK; we run unit tests locally with `./gradlew test` from `ProjectWatchApp_`. Instrumentation tests need a connected device or emulator.
 
-## Short reference list (exactly tied to code changes)
+**Manual**
 
-Android Developers. n.d.a. *ViewModel overview*. [online] Available at: <https://developer.android.com/topic/libraries/architecture/viewmodel> [Accessed 22 April 2026].
+We tested login, adding and deleting expenses (including visibility in Firebase), report date ranges and category charts, budget min/max goals and status text, navigation across screens, and migration behaviour after installs.
 
-Android Developers. n.d.b. *StateFlow and SharedFlow*. [online] Available at: <https://developer.android.com/kotlin/flow/stateflow-and-sharedflow> [Accessed 22 April 2026].
+---
 
-Android Developers. n.d.c. *ViewModel with Kotlin coroutines*. [online] Available at: <https://developer.android.com/topic/libraries/architecture/coroutines> [Accessed 23 April 2026].
+## Running the App and APK
 
-Android Developers. n.d.d. *Room persistence library*. [online] Available at: <https://developer.android.com/training/data-storage/room> [Accessed 23 April 2026].
+**Setup**
 
-Android Developers. n.d.e. *Accessing data using Room DAOs*. [online] Available at: <https://developer.android.com/training/data-storage/room/accessing-data> [Accessed 24 April 2026].
+1. Clone the repo and open **`ProjectWatchApp_`** in Android Studio.
+2. Add **`google-services.json`** to `ProjectWatchApp_/app/` (from Firebase project settings).
+3. Sync Gradle. The app targets **API 26** (Android 8.0) and above.
 
-Android Developers. n.d.f. *Migrate Room databases*. [online] Available at: <https://developer.android.com/training/data-storage/room/migrating-db-versions> [Accessed 24 April 2026].
+**Submission APK**
 
-Android Developers. n.d.g. *Build your app from the command line*. [online] Available at: <https://developer.android.com/build/building-cmdline> [Accessed 25 April 2026].
+*(Built and packaged by Orearabetse Riba for submission.)*
 
-Android Developers. n.d.h. *Test your app on Android*. [online] Available at: <https://developer.android.com/training/testing> [Accessed 25 April 2026].
+The installable file for marking is:
 
-Gradle. n.d. *Gradle User Manual*. [online] Available at: <https://docs.gradle.org/current/userguide/userguide.html> [Accessed 26 April 2026].
+**`ProjectWatchApp_/release/PocketWatch-Part3.apk`**
 
-JUnit Team. n.d. *JUnit 4*. [online] Available at: <https://junit.org/junit4/> [Accessed 26 April 2026].
+It is built from the debug APK (`assembleDebug`), which matches what GitHub Actions produces. Package: `com.example.projectwatchapp`, version 1.0 (versionCode 1). After rebuilding in Studio, copy the latest build over the release file:
+
+```powershell
+Copy-Item "app\build\outputs\apk\debug\app-debug.apk" "release\PocketWatch-Part3.apk" -Force
+```
+
+(run from inside `ProjectWatchApp_`)
+
+To install on a phone without Studio, copy `PocketWatch-Part3.apk` to the device and allow installation from your file manager, or use `adb install` if USB debugging is enabled.
+
+---
+
+## Demonstration Video
+
+
+
+### Video links
+
+| Video | Link | Description |
+|---|---|---|
+|  Part 3| https://www.youtube.com/watch?v=POYVnnglUDY | Full feature walkthrough with voiceover and Firebase proof |
+| Part 2 demos (reference) | [Demo 1](https://youtu.be/8eNBxrmB6-I) · [Demo 2](https://youtu.be/Yb3H48hMdGM) | Earlier prototypes |
+
+---
+
+## Challenges (Part 2 → Part 3)
+
+- **Firebase** — Matching RoomDB expense IDs with Firebase keys and avoiding duplicate rows when syncing.
+- **CI** — Gradle working directory, distribution checksum, and simplifying the workflow until builds were stable.
+- **Reports** — Fixing wrong totals and breakdowns before investing time in custom charts.
+- **UI vs logic** — Redesigning screens without breaking ViewModel bindings and IDs.
+- **Environment** — JDK setup and Gradle memory issues on some machines interrupted local builds.
+- **Team coordination** — Firebase, UI, logic, and docs happening in parallel required frequent merges and communication.
+
+---
+
+## What We Learned
+
+- Plan Firebase paths early alongside RoomDB entities.
+- Keep CI aligned with the Gradle wrapper in the repo; extra setup steps can do more harm than good.
+- Fix report maths before drawing graphs.
+- A shared README and regular merges reduce confusion when everyone touches different layers.
+
+---
+
+## References
+
+1. Google — Firebase Realtime Database: https://firebase.google.com/docs/database  
+2. GitHub Marketplace — Automated Build Android App with GitHub Action (03 November 2025)  
+3. IMAD5112 — GitHub Actions `build.yml` example (03 November 2025)  
+4. Android Developers — Room: https://developer.android.com/training/data-storage/room  
+5. Riba, Orearabetse (ST10446648). *PROG7313 Planning and Design* — Pocket Watch App Part 1 planning and design document: [docs/references/PROG7313-Planning-and-Design-ST10446648.pdf](docs/references/PROG7313-Planning-and-Design-ST10446648.pdf)  
+
+---
+
+## Screenshots
+
+App screens and Firebase proof (files in `docs/images/`, copied from `Downloads/Information/Screenshots`).
+
+### Dashboard
+
+![Dashboard — current layout](docs/images/dashboard.png)
+
+![Dashboard — earlier layout during Part 2 UI work](docs/images/dashboard-part1.png)
+
+### Reports (category graph and date range)
+
+![Reports — category spending trend](docs/images/reports-category-graph.png)
+
+### Budget (min/max goals and monthly status)
+
+![Budget — monthly limit, category budgets, spend vs max](docs/images/budget-spending-status.png)
+
+### Firebase (online storage)
+
+![Firebase — project and Realtime Database](docs/images/firebase-console-1.png)
+
+![Firebase — expense data under `project_watch_app/users/{userId}/expenses`](docs/images/firebase-console-2.png)
+
+---
+
+*Orearabetse Riba (ST10446648) — documentation. Last updated June 2026.*

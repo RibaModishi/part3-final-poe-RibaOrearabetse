@@ -3,6 +3,10 @@
 Pocket Watch is a mobile budgeting and personal finance tracker designed to help users manage spending, set goals, and build sustainable financial habits.  
 The app combines structured budgeting, expense tracking, goals, rewards/gamification, reports, and support content in one experience.
 
+**Part 3 (PROG7313):** Full documentation, screenshots, Firebase setup, and build instructions are in **[ProjectWatchApp_/README.md](ProjectWatchApp_/README.md)**.
+
+| **Submission APK** | [ProjectWatchApp_/release/PocketWatch-Part3.apk](ProjectWatchApp_/release/PocketWatch-Part3.apk) |
+
 ## Group Members
 
 | Name | Student Number | Group |
